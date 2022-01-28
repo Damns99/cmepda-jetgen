@@ -2,6 +2,7 @@ import os.path
 
 import h5py
 import numpy as np
+from matplotlib import pyplot as plt
 
 from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Reshape
 from tensorflow.keras.models import Model
@@ -56,16 +57,18 @@ hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(np.prod(jet_shape), activation="relu")(hidden)
 decoder_output = Reshape(target_shape=jet_shape, name='decoder_output')(hidden)
 
-autoencoder = Model(inputs=encoder_input, outputs=[decoder_output, kl_divergence],
+autoencoder_model = Model(inputs=encoder_input, outputs=[decoder_output, kl_divergence],
                     name='autoencoder')
-autoencoder.summary()
+autoencoder_model.summary()
 
 encoder_model = Model(inputs=encoder_input, outputs=latent_encoding,
                       name='encoder')
 # encoder_model.summary()
+encoder_model.compile(loss='mse', optimizer='adam')
 
 decoder_model = Model(inputs=decoder_input, outputs=decoder_output,
                       name='decoder')
+decoder_model.compile(loss='mse', optimizer='adam')
 # decoder_model.summary()
 
 losses = {'decoder_output': 'mse', 'kl_divergence': 'mean_absolute_error'}
@@ -73,10 +76,20 @@ loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.1}
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
 
-autoencoder.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
+autoencoder_model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
 
 target_kl = np.zeros((njets, 1))
 
-history = autoencoder.fit(
+history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},
-    validation_split=0.5, batch_size=10, epochs=10, verbose=1)
+    validation_split=0.5, batch_size=10, epochs=10, verbose=0)
+
+print(history.history.keys())
+plt.plot(history.history["val_loss"])
+plt.plot(history.history["loss"])
+plt.yscale('log')
+plt.show()
+
+autoencoder_model.save('Trained_Models/autoencoder')
+encoder_model.save('Trained_Models/encoder')
+decoder_model.save('Trained_Models/decoder')

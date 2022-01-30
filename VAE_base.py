@@ -86,4 +86,4 @@ def get_loss(distribution_mean, distribution_variance):
 autoencoder.compile(loss = get_loss(distribution_mean, distribution_variance), optimizer = 'adam')
 # autoencoder.compile(loss = 'mse', optimizer = 'adam')
 
-history = autoencoder.fit(jetList, jetList, validation_split = 0.5, epochs = 5, verbose = 1)
+history = autoencoder.fit(jetList, jetList, validation_split = 0.5, batch_size = 16, epochs = 100, verbose = 1)

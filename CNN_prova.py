@@ -29,6 +29,8 @@ njets = jetList.shape[0]
 jet_shape = jetList.shape[1:]
 target_shape = target.shape[1:]
 
+print(jet_shape)
+
 encoder_input = Input(shape=jet_shape)
 hidden = Conv1D(90, 5, activation="relu")(encoder_input)
 hidden = MaxPooling1D(2)(hidden)
@@ -51,13 +53,13 @@ encoder_model.summary()
 losses = 'binary_crossentropy'
 loss_weights = 1.0
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
 encoder_model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
 
 history = encoder_model.fit(
     jetList, target,
-    validation_split=0.8, batch_size=10, epochs=100, verbose=2,
+    validation_split=0.8, batch_size=10, epochs=1000, verbose=2,
     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1),
                tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1)])
 

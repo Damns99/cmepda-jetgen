@@ -38,10 +38,27 @@ colors = {0:'red', 1:'green', 2:'blue', 3:'yellow', 4:'purple'}
 target_colors = np.argmax(target, axis=1)
 
 plt.figure(1)
-plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[colors[i] for i in target_colors])
+plt.scatter(encoded_features[:, 1], encoded_features[:, 3], c=[colors[i] for i in target_colors])
 plt.axis('equal')
 
 print(encoded_features[0:10, :])
 print(target[0:10, :])
+
+part_pred = np.argmax(encoded_features, axis=1)
+part_real = np.argmax(target, axis=1)
+
+print(part_pred[0:20])
+print(part_real[0:20])
+
+correct = (part_pred == part_real)
+prediction_accuracy = np.count_nonzero(correct) / njets
+print(f'pred acc. = {prediction_accuracy * 100 : .2f} %')
+
+njets_per_type = np.count_nonzero(target, axis=0)
+pred_acc_per_type = np.array([
+        np.count_nonzero(np.logical_and(correct, part_real == i)) / n
+        for i, n in enumerate(njets_per_type)])
+for i, pacc in enumerate(pred_acc_per_type):
+    print(f'particle {i} pred acc. = {pacc * 100 : .2f} %')
 
 plt.show()

@@ -8,6 +8,8 @@ from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Resh
 from tensorflow.keras.models import Model
 import tensorflow as tf
 
+from sklearn.cluster import Birch
+
 jetList = np.array([])
 target = np.array([])
 
@@ -22,46 +24,71 @@ for fileIN in datafiles:
     del myJetList, mytarget
     f.close()
 
-pt_norm = 100.
+pt_norm = 500.
 jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
+
+jetList = jetList[:10000, :, :]
+target = target[:10000, :]
 
 njets = jetList.shape[0]
 jet_shape = jetList.shape[1:]
 
 encoder_model = tf.keras.models.load_model('Trained_Models/encoder')
 decoder_model = tf.keras.models.load_model('Trained_Models/decoder')
+autoencoder_model = tf.keras.models.load_model('Trained_Models/autoencoder')
 
 encoded_features = encoder_model.predict(jetList)
-print(np.shape(encoded_features))
 
 colors = {0:'red', 1:'green', 2:'blue', 3:'yellow', 4:'purple'}
-target_colors = np.argmax(target, axis=1)
+
+brc = Birch(branching_factor=50, n_clusters=5, threshold=0.1)
+brc.fit(encoded_features)
+
+part_pred = brc.predict(encoded_features)
+part_real = np.argmax(target, axis=1)
+
+print(part_pred[0:20])
+print(part_real[0:20])
 
 plt.figure(1)
-plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[colors[i] for i in target_colors])
+plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[colors[i] for i in part_pred], alpha=0.7)
+plt.axis('equal')
+
+plt.figure(2)
+plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[colors[i] for i in part_real], alpha=0.7)
 plt.axis('equal')
 
 decoded_jets = decoder_model.predict(encoded_features)
-print(np.shape(decoded_jets))
 
 def jet_histogram2d(jet, nbins=100):
     pt = jet[:, 0]
     etarel = jet[:, 1]
     phirel = jet[:, 2]
-    print(np.sum(pt>0))
-    print(np.max(etarel), np.min(etarel))
-    print(np.max(phirel), np.min(phirel))
     newjetImage = np.histogram2d(etarel, phirel, [nbins, nbins], [[-0.5, 0.5],[-0.5, 0.5]], weights=pt)
     return newjetImage[0]
 
-jet_index = 0
-print(colors[target_colors[jet_index]])
+jet_index = 1
+print(f'disp. particle color: {colors[target_colors[jet_index]]}')
 
-plt.figure(2)
-plt.imshow(jet_histogram2d(jetList[jet_index, :, :]), origin='lower', cmap='viridis_r')
 plt.figure(3)
+plt.imshow(jet_histogram2d(jetList[jet_index, :, :]), origin='lower', cmap='viridis_r')
+plt.colorbar()
+plt.figure(4)
 plt.imshow(jet_histogram2d(decoded_jets[jet_index, :, :]), origin='lower', cmap='viridis_r')
+plt.colorbar()
 
-print(np.mean((jetList[jet_index, :, :] - decoded_jets[jet_index, :, :])**2))
+target_kl = np.zeros((njets, 1))
+eval_loss = autoencoder_model.evaluate(jetList, {'decoder_output': jetList, 'kl_divergence': target_kl})
+
+correct = (part_pred == part_real)
+prediction_accuracy = np.count_nonzero(correct) / njets
+print(f'pred acc. = {prediction_accuracy * 100 : .2f} %')
+
+njets_per_type = np.count_nonzero(target, axis=0)
+pred_acc_per_type = np.array([
+        np.count_nonzero(np.logical_and(correct, part_real == i)) / n
+        for i, n in enumerate(njets_per_type)])
+for i, pacc in enumerate(pred_acc_per_type):
+    print(f'particle {i} pred acc. = {pacc * 100 : .2f} %')
 
 plt.show()

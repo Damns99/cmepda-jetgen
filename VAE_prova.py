@@ -22,6 +22,8 @@ for fileIN in datafiles:
 pt_norm = 500.
 jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
 
+#jetList = jetList[:10000, :, :]
+
 njets = jetList.shape[0]
 jet_shape = jetList.shape[1:]
 
@@ -74,7 +76,7 @@ hidden = Dense(16, activation="relu")(hidden)
 hidden = Dropout(0.1)(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dropout(0.1)(hidden)
-hidden = Dense(np.prod(jet_shape), activation="relu")(hidden)
+hidden = Dense(np.prod(jet_shape), activation="linear")(hidden)
 decoder_output = Reshape(target_shape=jet_shape, name='decoder_output')(hidden)
 
 autoencoder_model = Model(inputs=encoder_input, outputs=[decoder_output, kl_divergence],
@@ -83,8 +85,8 @@ autoencoder_model.summary()
 
 encoder_model = Model(inputs=encoder_input, outputs=latent_encoding,
                       name='encoder')
-# encoder_model.summary()
 encoder_model.compile(loss='mse', optimizer='adam')
+# encoder_model.summary()
 
 decoder_model = Model(inputs=decoder_input, outputs=decoder_output,
                       name='decoder')
@@ -94,21 +96,26 @@ decoder_model.compile(loss='mse', optimizer='adam')
 losses = {'decoder_output': 'mse', 'kl_divergence': 'mean_absolute_error'}
 loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.1}
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.00001)
 
 autoencoder_model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
 
 target_kl = np.zeros((njets, 1))
 
+validation_split = 0.5
+batch_size = 100
+epochs = 500
+
 history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},
-    validation_split=0.8, batch_size=10, epochs=100, verbose=2,
-    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1),
-               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, verbose=1)])
+    validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=2,
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=100, verbose=1),
+               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=25, verbose=1)])
 
 print(history.history.keys())
 plt.plot(history.history["loss"])
-plt.plot(history.history["val_loss"])
+if validation_split > 0.:
+    plt.plot(history.history["val_loss"])
 plt.yscale('log')
 plt.grid()
 

@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 from matplotlib import pyplot as plt
 
-from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Reshape, Conv1D, MaxPooling1D
+from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Reshape, Conv1D, MaxPooling1D, AveragePooling1D, UpSampling1D, Conv1DTranspose
 from tensorflow.keras.models import Model
 import tensorflow as tf
 
@@ -21,6 +21,7 @@ for fileIN in datafiles:
 
 pt_norm = 500.
 #jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
+jetList[:, :, 1:] = jetList[:, :, 1:] * pt_norm
 
 #jetList = jetList[:10000, :, :]
 
@@ -43,27 +44,22 @@ def kl_divergence_normal(distribution):
 enc_dimensions = 2
 
 encoder_input = Input(shape=jet_shape)
-hidden = Conv1D(64, 7, activation="relu")(encoder_input)
+hidden = Conv1D(128, 9, activation="relu")(encoder_input)
 hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(64, 5, activation="relu")(hidden)
+hidden = Conv1D(128, 7, activation="relu")(hidden)
+hidden = AveragePooling1D(2)(hidden)
+hidden = Conv1D(128, 5, activation="relu")(hidden)
 hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(32, 3, activation="relu")(hidden)
-hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(32, 3, activation="relu")(hidden)
-hidden = MaxPooling1D(2)(hidden)
+hidden = Conv1D(128, 3, activation="relu")(hidden)
+hidden = AveragePooling1D(2)(hidden)
+hidden = Conv1D(128, 1, activation="relu")(hidden)
+hidden = AveragePooling1D(2)(hidden)
 hidden = Flatten()(hidden)
-hidden = Dense(32, activation="relu")(hidden)
+hidden = Dense(64, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(8, activation="relu")(hidden)
-'''
-hidden = Dense(32, activation="relu")(hidden)
-hidden = Dropout(0.1)(hidden)
-hidden = Dense(16, activation="relu")(hidden)
-hidden = Dropout(0.1)(hidden)
-hidden = Dense(8, activation="relu")(hidden)
-hidden = Dropout(0.1)(hidden)
-'''
+
 mean_layer = Dense(enc_dimensions, activation="relu", name='mean')(hidden)
 log_variance_layer = Dense(enc_dimensions, activation="relu", name='log_variance')(hidden)
 
@@ -74,13 +70,21 @@ kl_divergence = Lambda(kl_divergence_normal,
 
 decoder_input = latent_encoding
 hidden = Dense(8, activation="relu")(decoder_input)
-#hidden = Dropout(0.1)(hidden)
 hidden = Dense(16, activation="relu")(hidden)
-#hidden = Dropout(0.1)(hidden)
 hidden = Dense(32, activation="relu")(hidden)
-#hidden = Dropout(0.1)(hidden)
-hidden = Dense(np.prod(jet_shape), activation="linear")(hidden)
-decoder_output = Reshape(target_shape=jet_shape, name='decoder_output')(hidden)
+hidden = Dense(64, activation="relu")(hidden)
+hidden = Dense(32, activation="relu")(hidden)
+hidden = Reshape(target_shape=(1,32))(hidden)
+hidden = UpSampling1D(3)(hidden)
+hidden = Conv1DTranspose(128, 1, activation="relu")(hidden)
+hidden = UpSampling1D(2)(hidden)
+hidden = Conv1DTranspose(128, 3, activation="relu")(hidden)
+hidden = UpSampling1D(2)(hidden)
+hidden = Conv1DTranspose(128, 5, activation="relu")(hidden)
+hidden = UpSampling1D(2)(hidden)
+hidden = Conv1DTranspose(128, 7, activation="relu")(hidden)
+hidden = UpSampling1D(2)(hidden)
+decoder_output = Conv1DTranspose(3, 9, activation="relu", name='decoder_output')(hidden)
 
 autoencoder_model = Model(inputs=encoder_input, outputs=[decoder_output, kl_divergence],
                     name='autoencoder')
@@ -97,9 +101,9 @@ decoder_model.compile(loss='mse', optimizer='adam')
 # decoder_model.summary()
 
 losses = {'decoder_output': 'mse', 'kl_divergence': 'mean_absolute_error'}
-loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.5}
+loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.01}
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
 autoencoder_model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
 
@@ -107,13 +111,13 @@ target_kl = np.zeros((njets, 1))
 
 validation_split = 0.5
 batch_size = 100
-epochs = 500
+epochs = 30
 
 history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},
     validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=2,
-    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=100, verbose=1),
-               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=25, verbose=1)])
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=1000, verbose=1),
+               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=1000, verbose=1)])
 
 print(history.history.keys())
 plt.plot(history.history["loss"])

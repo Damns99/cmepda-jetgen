@@ -35,13 +35,13 @@ target_kl = np.zeros((njets, 1))
 
 validation_split = 0.5
 batch_size = 100
-epochs = 200
+epochs = 10
 
 history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},
     validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=2,
     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=100, verbose=1),
-               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1)])
+               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=25, verbose=1)])
 
 print(history.history.keys())
 plt.plot(history.history["loss"])

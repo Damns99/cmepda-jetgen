@@ -26,6 +26,7 @@ for fileIN in datafiles:
 
 pt_norm = 500.
 #jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
+jetList[:, :, 1:] = jetList[:, :, 1:] * pt_norm
 
 #jetList = jetList[:10000, :, :]
 #target = target[:10000, :]

@@ -13,7 +13,7 @@ from sklearn.cluster import Birch
 jetList = np.array([])
 target = np.array([])
 
-datafiles = ['~/Documents/CMEPDA/CMEPDA_exam/Data/jetImage_7_100p_80000_90000.h5']
+datafiles = ['~/Documents/CMEPDA/CMEPDA_exam/Data/jetImage_7_100p_30000_40000.h5']
 for fileIN in datafiles:
     f = h5py.File(os.path.expanduser(fileIN))
     # for pT, etarel, phirel [5, 8, 11]
@@ -25,13 +25,14 @@ for fileIN in datafiles:
     f.close()
 
 pt_norm = 500.
-jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
+#jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
 
-jetList = jetList[:10000, :, :]
-target = target[:10000, :]
+#jetList = jetList[:10000, :, :]
+#target = target[:10000, :]
 
 njets = jetList.shape[0]
 jet_shape = jetList.shape[1:]
+target_shape = target.shape[1:]
 
 encoder_model = tf.keras.models.load_model('Trained_Models/encoder')
 decoder_model = tf.keras.models.load_model('Trained_Models/decoder')
@@ -41,7 +42,7 @@ encoded_features = encoder_model.predict(jetList)
 
 colors = {0:'red', 1:'green', 2:'blue', 3:'yellow', 4:'purple'}
 
-brc = Birch(branching_factor=50, n_clusters=5, threshold=0.1)
+brc = Birch(branching_factor=50, n_clusters=target_shape[0], threshold=0.1)
 brc.fit(encoded_features)
 
 part_pred = brc.predict(encoded_features)
@@ -68,7 +69,7 @@ def jet_histogram2d(jet, nbins=100):
     return newjetImage[0]
 
 jet_index = 1
-print(f'disp. particle color: {colors[target_colors[jet_index]]}')
+print(f'disp. particle color: {colors[part_real[jet_index]]}')
 
 plt.figure(3)
 plt.imshow(jet_histogram2d(jetList[jet_index, :, :]), origin='lower', cmap='viridis_r')

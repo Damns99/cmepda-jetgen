@@ -20,7 +20,7 @@ for fileIN in datafiles:
     f.close()
 
 pt_norm = 500.
-jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
+#jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
 
 #jetList = jetList[:10000, :, :]
 
@@ -43,16 +43,19 @@ def kl_divergence_normal(distribution):
 enc_dimensions = 2
 
 encoder_input = Input(shape=jet_shape)
-hidden = Conv1D(50, 5, activation="relu")(encoder_input)
+hidden = Conv1D(64, 7, activation="relu")(encoder_input)
 hidden = MaxPooling1D(2)(hidden)
-hidden = Dropout(0.1)(hidden)
-hidden = Conv1D(25, 5, activation="relu")(hidden)
+hidden = Conv1D(64, 5, activation="relu")(hidden)
 hidden = MaxPooling1D(2)(hidden)
-hidden = Dropout(0.1)(hidden)
-hidden = Conv1D(10, 5, activation="relu")(hidden)
+hidden = Conv1D(32, 3, activation="relu")(hidden)
+hidden = MaxPooling1D(2)(hidden)
+hidden = Conv1D(32, 3, activation="relu")(hidden)
 hidden = MaxPooling1D(2)(hidden)
 hidden = Flatten()(hidden)
-hidden = Dense(4, activation="relu")(hidden)
+hidden = Dense(32, activation="relu")(hidden)
+hidden = Dense(32, activation="relu")(hidden)
+hidden = Dense(16, activation="relu")(hidden)
+hidden = Dense(8, activation="relu")(hidden)
 '''
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dropout(0.1)(hidden)
@@ -71,11 +74,11 @@ kl_divergence = Lambda(kl_divergence_normal,
 
 decoder_input = latent_encoding
 hidden = Dense(8, activation="relu")(decoder_input)
-hidden = Dropout(0.1)(hidden)
+#hidden = Dropout(0.1)(hidden)
 hidden = Dense(16, activation="relu")(hidden)
-hidden = Dropout(0.1)(hidden)
+#hidden = Dropout(0.1)(hidden)
 hidden = Dense(32, activation="relu")(hidden)
-hidden = Dropout(0.1)(hidden)
+#hidden = Dropout(0.1)(hidden)
 hidden = Dense(np.prod(jet_shape), activation="linear")(hidden)
 decoder_output = Reshape(target_shape=jet_shape, name='decoder_output')(hidden)
 
@@ -94,9 +97,9 @@ decoder_model.compile(loss='mse', optimizer='adam')
 # decoder_model.summary()
 
 losses = {'decoder_output': 'mse', 'kl_divergence': 'mean_absolute_error'}
-loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.1}
+loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.5}
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.00001)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
 
 autoencoder_model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
 

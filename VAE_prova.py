@@ -8,22 +8,13 @@ from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Resh
 from tensorflow.keras.models import Model
 import tensorflow as tf
 
-jetList = np.array([])
+from utilities.file_opener import getJetList
 
-datafiles = [
-    '~/Documents/CMEPDA/CMEPDA_exam/Data/jetImage_7_100p_30000_40000.h5']
-for fileIN in datafiles:
-    f = h5py.File(os.path.expanduser(fileIN))
-    # for pT, etarel, phirel [5, 8, 11]
-    myJetList = np.array(f.get("jetConstituentList")[:, :, [5, 8, 11]])
-    jetList = np.concatenate([jetList, myJetList],
-                             axis=0) if jetList.size else myJetList
-    del myJetList
-    f.close()
+jetList, _ = getJetList()
 
-pt_norm = 500.
+#pt_norm = 100.
 #jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
-jetList[:, :, 1:] = jetList[:, :, 1:] * pt_norm
+#jetList[:, :, 1:] = jetList[:, :, 1:] * pt_norm
 
 #jetList = jetList[:10000, :, :]
 
@@ -109,7 +100,7 @@ decoder_model.compile(loss='mse', optimizer='adam')
 # decoder_model.summary()
 
 losses = {'decoder_output': 'mse', 'kl_divergence': 'mean_absolute_error'}
-loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.01}
+loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.1}
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
@@ -119,14 +110,16 @@ autoencoder_model.compile(
 target_kl = np.zeros((njets, 1))
 
 validation_split = 0.5
-batch_size = 100
+batch_size = 800
 epochs = 30
 
 history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},
     validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=2,
     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=1000, verbose=1),
-               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=1000, verbose=1)])
+               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                                                    patience=1000, verbose=1),
+               tf.keras.callbacks.TerminateOnNaN()])
 
 print(history.history.keys())
 plt.plot(history.history["loss"])

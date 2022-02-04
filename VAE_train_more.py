@@ -8,18 +8,11 @@ from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Resh
 from tensorflow.keras.models import Model
 import tensorflow as tf
 
-jetList = np.array([])
+from utilities.file_opener import getJetList
 
-datafiles = ['~/Documents/CMEPDA/CMEPDA_exam/Data/jetImage_7_100p_30000_40000.h5']
-for fileIN in datafiles:
-    f = h5py.File(os.path.expanduser(fileIN))
-    # for pT, etarel, phirel [5, 8, 11]
-    myJetList = np.array(f.get("jetConstituentList")[:, :, [5, 8, 11]])
-    jetList = np.concatenate([jetList, myJetList], axis=0) if jetList.size else myJetList
-    del myJetList
-    f.close()
+jetList, _ = getJetList()
 
-pt_norm = 500.
+#pt_norm = 500.
 #jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
 
 #jetList = jetList[:10000, :, :]
@@ -30,6 +23,11 @@ jet_shape = jetList.shape[1:]
 encoder_model = tf.keras.models.load_model('Trained_Models/encoder')
 decoder_model = tf.keras.models.load_model('Trained_Models/decoder')
 autoencoder_model = tf.keras.models.load_model('Trained_Models/autoencoder')
+
+# Change learning rate if you want
+new_learning_rate = 0.0001
+tf.keras.backend.set_value(autoencoder_model.optimizer.learning_rate,
+                           new_learning_rate)
 
 target_kl = np.zeros((njets, 1))
 

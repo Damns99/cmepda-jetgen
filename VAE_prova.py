@@ -10,12 +10,14 @@ import tensorflow as tf
 
 jetList = np.array([])
 
-datafiles = ['~/Documents/CMEPDA/CMEPDA_exam/Data/jetImage_7_100p_30000_40000.h5']
+datafiles = [
+    '~/Documents/CMEPDA/CMEPDA_exam/Data/jetImage_7_100p_30000_40000.h5']
 for fileIN in datafiles:
     f = h5py.File(os.path.expanduser(fileIN))
     # for pT, etarel, phirel [5, 8, 11]
     myJetList = np.array(f.get("jetConstituentList")[:, :, [5, 8, 11]])
-    jetList = np.concatenate([jetList, myJetList], axis=0) if jetList.size else myJetList
+    jetList = np.concatenate([jetList, myJetList],
+                             axis=0) if jetList.size else myJetList
     del myJetList
     f.close()
 
@@ -28,18 +30,22 @@ jetList[:, :, 1:] = jetList[:, :, 1:] * pt_norm
 njets = jetList.shape[0]
 jet_shape = jetList.shape[1:]
 
-mse_between_inputs = tf.keras.metrics.mean_squared_error(jetList[0, :, :], jetList[1, :, :])
+mse_between_inputs = tf.keras.metrics.mean_squared_error(
+    jetList[0, :, :], jetList[1, :, :])
 mse_between_inputs = np.mean(mse_between_inputs)
 print(f"initial mse = {mse_between_inputs}")
+
 
 def sample_latent_features(distribution):
     mean, log_variance = distribution
     random = tf.random.normal(shape=tf.shape(log_variance))
     return mean + tf.exp(1/2 * log_variance) * random
 
+
 def kl_divergence_normal(distribution):
     mean, log_variance = distribution
-    return 1/2 * (tf.exp(log_variance) + tf.square(mean) -1 - log_variance)
+    return 1/2 * (tf.exp(log_variance) + tf.square(mean) - 1 - log_variance)
+
 
 enc_dimensions = 2
 
@@ -61,7 +67,8 @@ hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(8, activation="relu")(hidden)
 
 mean_layer = Dense(enc_dimensions, activation="relu", name='mean')(hidden)
-log_variance_layer = Dense(enc_dimensions, activation="relu", name='log_variance')(hidden)
+log_variance_layer = Dense(
+    enc_dimensions, activation="relu", name='log_variance')(hidden)
 
 latent_encoding = Lambda(sample_latent_features,
                          name='latent_encoding')([mean_layer, log_variance_layer])
@@ -74,7 +81,7 @@ hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(64, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
-hidden = Reshape(target_shape=(1,32))(hidden)
+hidden = Reshape(target_shape=(1, 32))(hidden)
 hidden = UpSampling1D(3)(hidden)
 hidden = Conv1DTranspose(128, 1, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
@@ -84,10 +91,11 @@ hidden = Conv1DTranspose(128, 5, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
 hidden = Conv1DTranspose(128, 7, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
-decoder_output = Conv1DTranspose(3, 9, activation="relu", name='decoder_output')(hidden)
+decoder_output = Conv1DTranspose(
+    3, 9, activation="relu", name='decoder_output')(hidden)
 
 autoencoder_model = Model(inputs=encoder_input, outputs=[decoder_output, kl_divergence],
-                    name='autoencoder')
+                          name='autoencoder')
 autoencoder_model.summary()
 
 encoder_model = Model(inputs=encoder_input, outputs=latent_encoding,
@@ -105,7 +113,8 @@ loss_weights = {'decoder_output': 1.0, 'kl_divergence': 0.01}
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
-autoencoder_model.compile(loss=losses, loss_weights=loss_weights, optimizer=optimizer)
+autoencoder_model.compile(
+    loss=losses, loss_weights=loss_weights, optimizer=optimizer)
 
 target_kl = np.zeros((njets, 1))
 

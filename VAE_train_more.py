@@ -25,15 +25,15 @@ decoder_model = tf.keras.models.load_model('Trained_Models/decoder')
 autoencoder_model = tf.keras.models.load_model('Trained_Models/autoencoder')
 
 # Change learning rate if you want
-new_learning_rate = 0.0001
+new_learning_rate = 0.001
 tf.keras.backend.set_value(autoencoder_model.optimizer.learning_rate,
                            new_learning_rate)
 
 target_kl = np.zeros((njets, 1))
 
 validation_split = 0.5
-batch_size = 100
-epochs = 10
+batch_size = 800
+epochs = 5
 
 history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},

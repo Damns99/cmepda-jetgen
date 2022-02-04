@@ -41,15 +41,15 @@ def kl_divergence_normal(distribution):
 enc_dimensions = 2
 
 encoder_input = Input(shape=jet_shape)
-hidden = Conv1D(128, 9, activation="relu")(encoder_input)
+hidden = Conv1D(256, 9, activation="relu")(encoder_input)
 hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(128, 7, activation="relu")(hidden)
+hidden = Conv1D(256, 7, activation="relu")(hidden)
 hidden = AveragePooling1D(2)(hidden)
-hidden = Conv1D(128, 5, activation="relu")(hidden)
+hidden = Conv1D(256, 5, activation="relu")(hidden)
 hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(128, 3, activation="relu")(hidden)
+hidden = Conv1D(256, 3, activation="relu")(hidden)
 hidden = AveragePooling1D(2)(hidden)
-hidden = Conv1D(128, 1, activation="relu")(hidden)
+hidden = Conv1D(256, 1, activation="relu")(hidden)
 hidden = AveragePooling1D(2)(hidden)
 hidden = Flatten()(hidden)
 hidden = Dense(64, activation="relu")(hidden)
@@ -74,13 +74,13 @@ hidden = Dense(64, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Reshape(target_shape=(1, 32))(hidden)
 hidden = UpSampling1D(3)(hidden)
-hidden = Conv1DTranspose(128, 1, activation="relu")(hidden)
+hidden = Conv1DTranspose(256, 1, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
-hidden = Conv1DTranspose(128, 3, activation="relu")(hidden)
+hidden = Conv1DTranspose(256, 3, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
-hidden = Conv1DTranspose(128, 5, activation="relu")(hidden)
+hidden = Conv1DTranspose(256, 5, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
-hidden = Conv1DTranspose(128, 7, activation="relu")(hidden)
+hidden = Conv1DTranspose(256, 7, activation="relu")(hidden)
 hidden = UpSampling1D(2)(hidden)
 decoder_output = Conv1DTranspose(
     3, 9, activation="relu", name='decoder_output')(hidden)
@@ -111,7 +111,7 @@ target_kl = np.zeros((njets, 1))
 
 validation_split = 0.5
 batch_size = 800
-epochs = 30
+epochs = 5
 
 history = autoencoder_model.fit(
     jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},

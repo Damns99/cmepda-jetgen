@@ -31,7 +31,7 @@ autoencoder_model = tf.keras.models.load_model('Trained_Models/autoencoder')
 
 encoded_features = encoder_model.predict(jetList)
 
-colors = {0:'red', 1:'green', 2:'blue', 3:'yellow', 4:'purple'}
+colors = {0: 'red', 1: 'green', 2: 'blue', 3: 'yellow', 4: 'purple'}
 
 brc = Birch(branching_factor=50, n_clusters=target_shape[0], threshold=0.1)
 brc.fit(encoded_features)
@@ -43,11 +43,13 @@ print(part_pred[0:20])
 print(part_real[0:20])
 
 plt.figure(1)
-plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[colors[i] for i in part_pred], alpha=0.7)
+plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[
+            colors[i] for i in part_pred], alpha=0.7)
 plt.axis('equal')
 
 plt.figure(2)
-plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[colors[i] for i in part_real], alpha=0.7)
+plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[
+            colors[i] for i in part_real], alpha=0.7)
 plt.axis('equal')
 
 decoded_jets = decoder_model.predict(encoded_features)
@@ -71,12 +73,15 @@ print(f'disp. particle color: {colors[part_real[jet_index]]}')
 # plt.pcolormesh(tmpx, tmpy, decoded_jets[jet_index, :, :], cmap='viridis_r', shading='flat')
 # plt.colorbar()
 
+
 def jet_histogram2d(jet, nbins=100):
     pt = jet[:, 0]
     etarel = jet[:, 1]
     phirel = jet[:, 2]
-    newjetImage, xedges, yedges = np.histogram2d(etarel, phirel, [nbins, nbins], weights=pt)
+    newjetImage, xedges, yedges = np.histogram2d(
+        etarel, phirel, [nbins, nbins], weights=pt)
     return newjetImage, [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+
 
 hist_real, extent_real = jet_histogram2d(jetList[jet_index, :, :])
 plt.figure(5)
@@ -89,7 +94,8 @@ plt.imshow(hist_pred, origin='lower', cmap='viridis_r', extent=extent_pred)
 plt.colorbar()
 
 target_kl = np.zeros((njets, 1))
-eval_loss = autoencoder_model.evaluate(jetList, {'decoder_output': jetList, 'kl_divergence': target_kl})
+eval_loss = autoencoder_model.evaluate(
+    jetList, {'decoder_output': jetList, 'kl_divergence': target_kl})
 '''
 correct = (part_pred == part_real)
 prediction_accuracy = np.count_nonzero(correct) / njets

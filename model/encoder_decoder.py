@@ -42,7 +42,8 @@ log_variance_layer = Dense(
     encDimensions, activation="relu", name='log_variance')(hidden)
 
 latent_encoding = Lambda(sample_latent_features,
-                         name='latent_encoding')([mean_layer, log_variance_layer])
+                         name='latent_encoding')([mean_layer,
+                                                 log_variance_layer])
 kl_divergence = Lambda(kl_divergence_normal,
                        name='kl_divergence')([mean_layer, log_variance_layer])
 

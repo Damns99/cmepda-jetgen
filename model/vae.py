@@ -23,7 +23,8 @@ class vae(tf.keras.Model):
                                  optimizer=self.myOptimizer,
                                  loss_weights=self.lossWeights)
 
-    def fit(self, jetList, validation_split=0.5, batch_size=800, epochs=30, **kwargs):
+    def fit(self, jetList, validation_split=0.5, batch_size=800, epochs=30,
+            **kwargs):
         target_kl = np.zeros((jetList.shape[0], 1))
         return super(vae, self).fit(jetList,
                                     {'decoder_output': jetList,

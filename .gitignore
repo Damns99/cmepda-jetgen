@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # Personal Files
-trained_models/**
+trained_models/

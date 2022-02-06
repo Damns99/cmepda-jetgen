@@ -1,7 +1,10 @@
+import os
 import numpy as np
 import tensorflow as tf
 from model.encoder_decoder import (
     encoder_model, encoder_input, decoder_model, decoder_output, kl_divergence)
+
+train_path = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 
 
 class vae(tf.keras.Model):
@@ -33,8 +36,13 @@ class vae(tf.keras.Model):
                                     validation_split=validation_split,
                                     epochs=epochs, verbose=2)
 
-    def predict_encoder(self, jetList, **kwargs):
+    def encoder_predict(self, jetList, **kwargs):
         return self.encoder.predict(jetList, **kwargs)
 
-    def predict_decoder(self, jetList, **kwargs):
-        return self.decoder.predict(jetList, **kwargs)
+    def decoder_predict(self, encoded_features, **kwargs):
+        return self.decoder.predict(encoded_features, **kwargs)
+
+    def save(self):
+        self.encoder.save(os.path.join(train_path, 'encoder'))
+        self.decoder.save(os.path.join(train_path, 'decoder'))
+        return super(vae, self).save(os.path.join(train_path, 'vae'))

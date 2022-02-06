@@ -21,6 +21,7 @@ def kl_divergence_normal(distribution):
 
 
 encoder_input = Input(shape=jetShape)
+
 hidden = Conv1D(128, 9, activation="relu")(encoder_input)
 hidden = MaxPooling1D(2)(hidden)
 hidden = Conv1D(128, 7, activation="relu")(hidden)
@@ -48,6 +49,7 @@ kl_divergence = Lambda(kl_divergence_normal,
                        name='kl_divergence')([mean_layer, log_variance_layer])
 
 decoder_input = latent_encoding
+
 hidden = Dense(8, activation="relu")(decoder_input)
 hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)

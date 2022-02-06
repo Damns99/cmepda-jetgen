@@ -32,3 +32,4 @@ def jetScatter(encoded_features, jetTag):
     plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[
                 colors[i] for i in jetTag], alpha=0.7)
     plt.axis('equal')
+    plt.show()

@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib import pyplot as plt
 from model.vae import vae
 from utilities.file_opener import getJetList
 from utilities.plots import historyPlot, jetScatter, jetHist2D
@@ -24,8 +25,13 @@ jetTag = np.argmax(target, axis=1)
 encoded_features = vae.encoder_predict(jetList)
 decoded_jets = vae.decoder_predict(encoded_features)
 
+plt.figure()
 jetScatter(encoded_features, jetTag)
 
+plt.figure()
 jetHist2D(jetList[1, :, :])
 
+plt.figure()
 jetHist2D(decoded_jets[1, :, :])
+
+plt.show()

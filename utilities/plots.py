@@ -10,7 +10,6 @@ def historyPlot(history):
     plt.xlabel('Epochs')
     plt.tick_params(direction='in')
     plt.legend()
-    plt.show()
 
 
 def jetHist2D(jetList, nbins=100):
@@ -24,7 +23,6 @@ def jetHist2D(jetList, nbins=100):
     plt.xlabel(r'$\eta_{rel}$')
     plt.ylabel(r'$\phi_{rel}$')
     plt.colorbar().set_label(r'$p_t$', rotation=0)
-    plt.show()
 
 
 def jetScatter(encoded_features, jetTag):
@@ -32,4 +30,3 @@ def jetScatter(encoded_features, jetTag):
     plt.scatter(encoded_features[:, 0], encoded_features[:, 1], c=[
                 colors[i] for i in jetTag], alpha=0.7)
     plt.axis('equal')
-    plt.show()

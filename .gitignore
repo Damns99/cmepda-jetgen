@@ -128,6 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-###### Personal Files
-Trained_Models/
+# Personal Files
+trained_models/
+trained_models_old/

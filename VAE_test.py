@@ -9,6 +9,10 @@ from utilities.model_getter import getModels
 from utilities.plots import historyPlot, jetScatter, jetHist2D
 from model.vae import vae
 
+w1 = 1000
+w3 = 100
+
+
 with tf.device('/CPU:0'):
     jetList, target = getJetList()
 
@@ -16,8 +20,14 @@ with tf.device('/CPU:0'):
 
     jetTag = np.argmax(target, axis=1)
 
+    jetList[:, 0] = jetList[:, 0] / w1
+    jetList[:, 2] = jetList[:, 2] / w3
+    jetList[:, 1] = np.abs(jetList[:, 1])
+
     encoded_features = autoencoder_model.encoder_predict(jetList=jetList)
     decoded_jets = autoencoder_model.decoder_predict(encoded_features)
+
+    print(decoded_jets[:10, :], jetList[:10, :])
 
     plt.figure()
     jetScatter(encoded_features, jetTag)

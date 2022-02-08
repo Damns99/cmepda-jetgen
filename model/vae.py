@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from model.encoder_decoder import (
-    encoder_model, encoder_input, decoder_model, decoder_output, kl_divergence)
+    encoder_model, encoder_input, decoder_model, decoder_output, kl_divergence, classification)
 
 trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 
@@ -10,28 +10,30 @@ trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 class vae(tf.keras.Model):
     def __init__(self):
         super(vae, self).__init__(inputs=encoder_input,
-                                  outputs=[decoder_output, kl_divergence],
+                                  outputs=[decoder_output, kl_divergence, classification],
                                   name='autoencoder')
         self.encoder = encoder_model
         self.decoder = decoder_model
         self.myLosses = {'decoder_output': 'mse',
-                         'kl_divergence': 'mean_absolute_error'}
+                         'kl_divergence': 'mean_absolute_error',
+                         'classification': 'binary_crossentropy'}
 
-    def compile(self, learningRate=0.001, lossWeights=[1.0, 1.0], **kwargs):
+    def compile(self, learningRate=0.001, lossWeights=[1.0, 1.0, 1.0], **kwargs):
         self.myOptimizer = tf.keras.optimizers.Adam(
             learning_rate=learningRate)
         self.lossWeights = {
-            'decoder_output': lossWeights[0], 'kl_divergence': lossWeights[1]}
+            'decoder_output': lossWeights[0], 'kl_divergence': lossWeights[1], 'classification': lossWeights[2]}
         super(vae, self).compile(loss=self.myLosses,
                                  optimizer=self.myOptimizer,
                                  loss_weights=self.lossWeights, **kwargs)
 
-    def fit(self, jetList, validationSplit=0.5, batchSize=800, epochs=30,
+    def fit(self, jetList, target, validationSplit=0.5, batchSize=800, epochs=30,
             **kwargs):
         target_kl = np.zeros((jetList.shape[0], 1))
         return super(vae, self).fit(jetList,
                                     {'decoder_output': jetList,
-                                     'kl_divergence': target_kl},
+                                     'kl_divergence': target_kl,
+                                     'classification': target},
                                     batch_size=batchSize,
                                     validation_split=validationSplit,
                                     epochs=epochs, verbose=2, **kwargs)

@@ -1,9 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (Input, Dense, Lambda)
+from tensorflow.keras.layers import (Input, Dense, Lambda, Concatenate)
 
 jetShape = (5)
-encDimensions = 2
+encDimensions = 3
 
 
 def sample_latent_features(distribution):
@@ -34,7 +34,9 @@ latent_encoding = Lambda(sample_latent_features,
 kl_divergence = Lambda(kl_divergence_normal,
                        name='kl_divergence')([mean_layer, log_variance_layer])
 
-decoder_input = latent_encoding
+classification = Dense(5, activation='sigmoid', name='classification')(hidden)
+
+decoder_input = Concatenate()([latent_encoding, classification])
 
 hidden = Dense(8, activation="relu")(decoder_input)
 hidden = Dense(16, activation="relu")(hidden)
@@ -44,7 +46,7 @@ hidden = Dense(32, activation="relu")(hidden)
 decoder_output = Dense(5, activation='relu', name='decoder_output')(hidden)
 
 
-encoder_model = Model(inputs=encoder_input, outputs=latent_encoding,
+encoder_model = Model(inputs=encoder_input, outputs=[latent_encoding, classification],
                       name='encoder')
 encoder_model.compile(loss='mse', optimizer='adam')
 

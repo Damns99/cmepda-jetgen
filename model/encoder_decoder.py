@@ -1,11 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (Input, Dense,
-                                     Flatten, Lambda, Reshape, Conv1D,
-                                     MaxPooling1D, AveragePooling1D,
-                                     UpSampling1D, Conv1DTranspose)
+from tensorflow.keras.layers import (Input, Dense, Lambda)
 
-jetShape = (100, 3)
+jetShape = (5)
 encDimensions = 2
 
 
@@ -22,18 +19,7 @@ def kl_divergence_normal(distribution):
 
 encoder_input = Input(shape=jetShape)
 
-hidden = Conv1D(128, 9, activation="relu")(encoder_input)
-hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(128, 7, activation="relu")(hidden)
-hidden = AveragePooling1D(2)(hidden)
-hidden = Conv1D(128, 5, activation="relu")(hidden)
-hidden = MaxPooling1D(2)(hidden)
-hidden = Conv1D(128, 3, activation="relu")(hidden)
-hidden = AveragePooling1D(2)(hidden)
-hidden = Conv1D(128, 1, activation="relu")(hidden)
-hidden = AveragePooling1D(2)(hidden)
-hidden = Flatten()(hidden)
-hidden = Dense(64, activation="relu")(hidden)
+hidden = Dense(64, activation="relu")(encoder_input)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(8, activation="relu")(hidden)
@@ -55,18 +41,7 @@ hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(64, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
-hidden = Reshape(target_shape=(1, 32))(hidden)
-hidden = UpSampling1D(3)(hidden)
-hidden = Conv1DTranspose(128, 1, activation="relu")(hidden)
-hidden = UpSampling1D(2)(hidden)
-hidden = Conv1DTranspose(128, 3, activation="relu")(hidden)
-hidden = UpSampling1D(2)(hidden)
-hidden = Conv1DTranspose(128, 5, activation="relu")(hidden)
-hidden = UpSampling1D(2)(hidden)
-hidden = Conv1DTranspose(128, 7, activation="relu")(hidden)
-hidden = UpSampling1D(2)(hidden)
-decoder_output = Conv1DTranspose(
-    3, 9, activation="relu", name='decoder_output')(hidden)
+decoder_output = Dense(5, activation='relu', name='decoder_output')(hidden)
 
 
 encoder_model = Model(inputs=encoder_input, outputs=latent_encoding,

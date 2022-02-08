@@ -14,7 +14,7 @@ filename = ['jetImage_7_100p_0_10000.h5', 'jetImage_7_100p_10000_20000.h5',
             'jetImage_7_100p_70000_80000.h5', 'jetImage_7_100p_80000_90000.h5']
 
 
-def getJetList(test=False, idx=[5, 8, 11]):
+def getJetList(test=False, idx=[1, 2, 3, 10, 11]):
     '''File opener function for the .h5 dataset.
     '''
     jetList = np.array([])
@@ -22,9 +22,9 @@ def getJetList(test=False, idx=[5, 8, 11]):
 
     for file in filename:
         f = h5py.File(os.path.join(data_path, file))
-        # for pT, etarel, phirel [5, 8, 11]
-        myJetList = np.array(f.get("jetConstituentList")[:, :, idx])
-        myTarget = np.array(f.get('jets')[:, -6:-1])
+        featuresList = np.array(f.get('jets'))
+        myJetList = featuresList[:, idx]
+        myTarget = featuresList[:, -6:-1]
         if jetList.size:
             jetList = np.concatenate([jetList, myJetList], axis=0)
             target = np.concatenate([target, myTarget], axis=0)

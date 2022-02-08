@@ -12,8 +12,6 @@ from model.vae import vae
 with tf.device('/CPU:0'):
     jetList, target = getJetList()
 
-    jet_shape = jetList.shape[1:]
-
     autoencoder_model = getModels()
 
     jetTag = np.argmax(target, axis=1)
@@ -30,27 +28,5 @@ with tf.device('/CPU:0'):
 
     plt.figure()
     jetScatter(encoded_features, predTag)
-
-    plt.figure()
-    jetHist2D(jetList[1, :, :])
-
-    plt.figure()
-    jetHist2D(decoded_jets[1, :, :])
-
-    # tmpx = np.arange(jet_shape[0]+1)
-    # tmpy = np.arange(jet_shape[1]+1)
-    # tmpx, tmpy = np.meshgrid(tmpx, tmpy)
-    #
-    # plt.figure(3)
-    # #plt.imshow(jetList[jet_index, :, :], origin='lower', cmap='viridis_r',
-    # #           extent=[0, jet_shape[0], 0, jet_shape[1]])
-    # plt.pcolormesh(tmpx, tmpy, jetList[jet_index, :, :], cmap='viridis_r', shading='flat')
-    # plt.colorbar()
-    #
-    # plt.figure(4)
-    # #plt.imshow(decoded_jets[jet_index, :, :], origin='lower', cmap='viridis_r',
-    # #           extent=[0, jet_shape[0], 0, jet_shape[1]])
-    # plt.pcolormesh(tmpx, tmpy, decoded_jets[jet_index, :, :], cmap='viridis_r', shading='flat')
-    # plt.colorbar()
 
     plt.show()

@@ -6,7 +6,7 @@ from sklearn.cluster import Birch
 
 from utilities.file_opener import getJetList
 from utilities.model_getter import getModels
-from utilities.plots import historyPlot, jetScatter, jetHist2D, jetScatter3D
+from utilities.plots import historyPlot, jetScatter, jetScatter3D
 from model.vae import vae
 
 w1 = 1000

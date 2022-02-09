@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from model.encoder_decoder import (
-    encoder_model, encoder_input, decoder_model, decoder_output, kl_divergence, classification)
+    encoder_model, encoder_input, decoder_model, decoder_output, kl_divergence, classification, encDimensions)
 
 trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 
@@ -14,6 +14,7 @@ class vae(tf.keras.Model):
                                   name='autoencoder')
         self.encoder = encoder_model
         self.decoder = decoder_model
+        self.encDimensions = encDimensions
         self.myLosses = {'decoder_output': 'mse',
                          'kl_divergence': 'mean_absolute_error',
                          'classification': 'binary_crossentropy'}

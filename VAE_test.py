@@ -2,12 +2,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
-from sklearn.cluster import Birch
+# Sfrom sklearn.cluster import Birch
 
 from utilities.file_opener import getJetList
 from utilities.model_getter import getModels
-from utilities.plots import historyPlot, jetScatter, jetScatter3D
-from model.vae import vae
+from utilities.plots import jetScatter, jetScatter3D
+from utilities.figure_saver import saveFig
 
 w1 = 1000
 w3 = 100
@@ -16,8 +16,8 @@ w3 = 100
 with tf.device('/CPU:0'):
     jetList, target = getJetList()
 
-    #jetList = jetList[:1000, :]
-    #target = target[:1000, :]
+    # jetList = jetList[:1000, :]
+    # target = target[:1000, :]
 
     njets = jetList.shape[0]
 
@@ -41,16 +41,26 @@ with tf.device('/CPU:0'):
     jetScatter(encoded_features, jetTag, 0, 1)
     plt.subplot(122)
     jetScatter(encoded_features, jetTag, 0, 2)
+    saveFig("encoded_features_2d")
 
     plt.figure()
     jetScatter3D(encoded_features, jetTag)
+    saveFig("encoded_features_3d")
 
-    #brc = Birch(branching_factor=50, n_clusters=5, threshold=0.1)
-    #brc.fit(encoded_features)
-    #predTag = brc.predict(encoded_features)
+    # brc = Birch(branching_factor=50, n_clusters=5, threshold=0.1)
+    # brc.fit(encoded_features)
+    # predTag = brc.predict(encoded_features)
 
-    #plt.figure()
-    #jetScatter(encoded_features, predTag)
+    # plt.figure()
+    # plt.subplot(121)
+    # jetScatter(encoded_features, predTag, 0, 1)
+    # plt.subplot(122)
+    # jetScatter(encoded_features, predTag, 0, 2)
+    # saveFig("birch_clusters_2d")
+    #
+    # plt.figure()
+    # jetScatter3D(encoded_features, predTag)
+    # saveFig("birch_clusters_3d")
 
     print(pred_target[0:20])
 
@@ -66,8 +76,8 @@ with tf.device('/CPU:0'):
 
     njets_per_type = np.count_nonzero(target, axis=0)
     pred_acc_per_type = np.array([
-            np.count_nonzero(np.logical_and(correct, part_real == i)) / n
-            for i, n in enumerate(njets_per_type)])
+        np.count_nonzero(np.logical_and(correct, part_real == i)) / n
+        for i, n in enumerate(njets_per_type)])
     for i, pacc in enumerate(pred_acc_per_type):
         print(f'particle {i} pred acc. = {pacc * 100 : .2f} %')
 

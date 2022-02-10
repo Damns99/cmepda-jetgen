@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
-from model.vae import vae
 from utilities.file_opener import getJetList
 from utilities.plots import jetHist
 
@@ -31,6 +30,7 @@ with tf.device('/CPU:0'):
     jetList[:, 1] = np.abs(jetList[:, 1])
 
     particleType = [0, 0, 0, 0, 1]
+    particleTag = np.argmax(particleType)
 
     generated_jets = jet_gen(particleType, 10000, 789)
 
@@ -43,7 +43,8 @@ with tf.device('/CPU:0'):
     print(jetList[:10])
     print(target[:10])
 
-    jetHist(jetList, bins=100)
-    jetHist(generated_jets, bins=100)
+    featureNames = ['pt', 'abs(eta)', 'mass', 'tau32_b1', 'tau32_b2']
+    jetHist(jetList, featureNames, customName=f'_type{particleTag}_true', bins=100)
+    jetHist(generated_jets, featureNames, customName=f'_type{particleTag}_gen', bins=100)
 
     plt.show()

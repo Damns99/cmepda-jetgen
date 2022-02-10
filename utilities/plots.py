@@ -1,6 +1,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
+from utilities.figure_saver import saveFig
+
 
 def historyPlot(history):
     plt.plot(history.history["loss"], label='Loss')
@@ -33,9 +35,14 @@ def jetScatter(encoded_features, jetTag, idx1=0, idx2=1):
 
 def jetScatter3D(encoded_features, jetTag, idx1=0, idx2=1, idx3=2):
     colors = {0: 'red', 1: 'green', 2: 'blue', 3: 'yellow', 4: 'purple'}
-    plt.axes(projection='3d').scatter3D(encoded_features[:, idx1], encoded_features[:, idx2], encoded_features[:, idx3],  c=[colors[i] for i in jetTag], alpha=0.5, marker='.')
+    plt.axes(projection='3d').scatter3D(
+        encoded_features[:, idx1], encoded_features[:, idx2],
+        encoded_features[:, idx3], c=[colors[i] for i in jetTag],
+        alpha=0.5, marker='.')
 
-def jetHist(jetList, **kwargs):
-    for j in np.transpose(jetList):
+def jetHist(jetList, featureNames, customName='', **kwargs):
+    for name, feature in zip(featureNames, np.transpose(jetList)):
         plt.figure()
-        plt.hist(j, density=False, **kwargs)
+        plt.hist(feature, density=False, **kwargs)
+        plt.xlabel(name)
+        saveFig(name, customName)

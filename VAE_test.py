@@ -2,13 +2,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
-from sklearn.cluster import Birch
+# Sfrom sklearn.cluster import Birch
 
 from utilities.file_opener import getJetList
 from utilities.model_getter import getModels
-from utilities.plots import historyPlot, jetScatter, jetScatter3D
+from utilities.plots import jetScatter, jetScatter3D
 from utilities.figure_saver import saveFig
-from model.vae import vae
 
 w1 = 1000
 w3 = 100
@@ -17,8 +16,8 @@ w3 = 100
 with tf.device('/CPU:0'):
     jetList, target = getJetList()
 
-    #jetList = jetList[:1000, :]
-    #target = target[:1000, :]
+    # jetList = jetList[:1000, :]
+    # target = target[:1000, :]
 
     njets = jetList.shape[0]
 
@@ -77,8 +76,8 @@ with tf.device('/CPU:0'):
 
     njets_per_type = np.count_nonzero(target, axis=0)
     pred_acc_per_type = np.array([
-            np.count_nonzero(np.logical_and(correct, part_real == i)) / n
-            for i, n in enumerate(njets_per_type)])
+        np.count_nonzero(np.logical_and(correct, part_real == i)) / n
+        for i, n in enumerate(njets_per_type)])
     for i, pacc in enumerate(pred_acc_per_type):
         print(f'particle {i} pred acc. = {pacc * 100 : .2f} %')
 

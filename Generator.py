@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
-from model.vae import vae
 from utilities.file_opener import getJetList
 from utilities.plots import jetHist
 

@@ -7,6 +7,7 @@ from sklearn.cluster import Birch
 from utilities.file_opener import getJetList
 from utilities.model_getter import getModels
 from utilities.plots import historyPlot, jetScatter, jetScatter3D
+from utilities.figure_saver import saveFig
 from model.vae import vae
 
 w1 = 1000
@@ -41,6 +42,7 @@ with tf.device('/CPU:0'):
     jetScatter(encoded_features, jetTag, 0, 1)
     plt.subplot(122)
     jetScatter(encoded_features, jetTag, 0, 2)
+
 
     plt.figure()
     jetScatter3D(encoded_features, jetTag)

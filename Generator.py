@@ -1,3 +1,5 @@
+"""Use a saved vae model to generate some new jets and confront them with real data."""
+
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
@@ -6,6 +8,23 @@ from utilities.file_opener import getJetList
 from utilities.plots import jetHist
 
 def jet_gen(particleType, nEvents=1, seed=42):
+    """
+    Open a saved vae model and generate new jets of a given jet type from random noise
+
+    Parameters:
+        particleType : list or tuple
+            selected jet type in one-hot encoded form.
+        nEvents : int
+            number of jets to generate.
+            Default 1
+        seed : int
+            seed for the np.random random number generator, used for the noise
+            Default 42
+
+    Returns:
+        A numpy 2d array of nEvents rows each with generated jet features
+    """
+
     from utilities.model_getter import getModels
 
     autoencoder_model = getModels()

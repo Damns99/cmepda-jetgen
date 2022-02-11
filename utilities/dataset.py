@@ -1,3 +1,5 @@
+"""Open some relevant fields of an axample dataset and print/plot them"""
+
 import os.path
 import h5py
 import numpy as np
@@ -5,6 +7,16 @@ import matplotlib.pyplot as plt
 
 
 def plotFeature(feature, xlabel):
+    """
+    Plot an histogram of a given feature and show it
+
+    Parameters:
+        feature : numpy array
+            Input to plot
+        xlabel : string
+            Name of the feature for the x axis
+    """
+
     plt.hist(feature, 20)
     plt.xlabel(xlabel)
     plt.show()

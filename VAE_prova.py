@@ -1,3 +1,5 @@
+"""Open the dataset, create a vae model and train it, saving history and weights."""
+
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf

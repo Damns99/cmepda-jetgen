@@ -1,3 +1,5 @@
+"""Open the dataset, evaluate the model and confront results with expectations."""
+
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf

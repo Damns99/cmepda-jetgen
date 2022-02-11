@@ -1,7 +1,6 @@
-'''File opener function for the .h5 dataset'''
+'''File opener for the .h5 dataset'''
 
 import os
-
 import numpy as np
 import h5py
 
@@ -14,9 +13,24 @@ filename = ['jetImage_7_100p_0_10000.h5', 'jetImage_7_100p_10000_20000.h5',
             'jetImage_7_100p_70000_80000.h5', 'jetImage_7_100p_80000_90000.h5']
 
 
-def getJetList(test=False, idx=[1, 2, 3, 10, 11]):
-    '''File opener function for the .h5 dataset.
+def getJetList(test=False, idx=(1, 2, 3, 10, 11)):
     '''
+    File opener function for the .h5 dataset.
+
+    Parameters:
+        test : bool
+            If True open only the first file (use to speedup code testing)
+        idx : list or tuple
+            List of indexes of the jets field features to select
+            Default (1, 2, 3, 10, 11)
+
+    Returns:
+        jetList : numpy 2d array
+            Each row is an array of the selected jet features
+        target : numpy 2d array
+            Each row is an array corresponding to the one-hot encoded jet type
+    '''
+
     jetList = np.array([])
     target = np.array([])
 

@@ -33,9 +33,8 @@ def jet_gen(particleType, nEvents=1, seed=42):
 
     particle = np.tile(particleType, (nEvents, 1))
     noise = np.random.normal(size=(nEvents, autoencoder_model.encDimensions))
-    generator_input = np.concatenate((noise, particle), axis=-1)
 
-    return np.array(autoencoder_model.decoder_predict(generator_input))
+    return np.array(autoencoder_model.decoder_predict(noise, particle))
 
 with tf.device('/CPU:0'):
 
@@ -46,14 +45,14 @@ with tf.device('/CPU:0'):
 
     jetList[:, 0] = jetList[:, 0] / w1
     jetList[:, 2] = jetList[:, 2] / w3
-    jetList[:, 1] = np.abs(jetList[:, 1])
+    # jetList[:, 1] = np.abs(jetList[:, 1])
 
     particleType = [0, 0, 0, 0, 1]
     particleTag = np.argmax(particleType)
 
     generated_jets = jet_gen(particleType, 10000, 789)
 
-    print(generated_jets)
+    print(generated_jets[:10])
 
     filterType = np.all((target == particleType), axis=1)
     jetList = jetList[filterType, :]

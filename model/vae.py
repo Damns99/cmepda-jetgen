@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from model.encoder_decoder import (
     encoder_model, encoder_input, decoder_model, decoder_output,
-    kl_divergence, classification, encDimensions)
+    kl_divergence, encDimensions, jet_input, target_input)
 
 trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 
@@ -48,17 +48,16 @@ class vae(tf.keras.Model):
         in model.encoder_decoder.
         """
 
-        super(vae, self).__init__(inputs=encoder_input,
-                                  outputs=[decoder_output, kl_divergence, classification],
+        super(vae, self).__init__(inputs=[jet_input, target_input],
+                                  outputs=[decoder_output, kl_divergence],
                                   name='autoencoder')
         self.encoder = encoder_model
         self.decoder = decoder_model
         self.encDimensions = encDimensions
         self.myLosses = {'decoder_output': 'mse',
-                         'kl_divergence': 'mean_absolute_error',
-                         'classification': 'binary_crossentropy'}
+                         'kl_divergence': 'mean_absolute_error'}
 
-    def compile(self, learningRate=0.001, lossWeights=(1.0, 1.0, 1.0), **kwargs):
+    def compile(self, learningRate=0.001, lossWeights=(1.0, 1.0), **kwargs):
         """
         Extend tf.keras.Model.compile to work with vae structure and parameters.
 
@@ -69,13 +68,12 @@ class vae(tf.keras.Model):
             lossWeights : list or tuple
                 List of 3 weights for each loss to compute the total loss,
                 in order 'decoder_output', 'kl_divergence', 'classification'
-                Default (1.0, 1.0, 1.0)
+                Default (1.0, 1.0)
         """
 
         self.myOptimizer = tf.keras.optimizers.Adam(learning_rate=learningRate)
         self.myLossWeights = {
-            'decoder_output': lossWeights[0], 'kl_divergence': lossWeights[1],
-            'classification': lossWeights[2]}
+            'decoder_output': lossWeights[0], 'kl_divergence': lossWeights[1]}
         super(vae, self).compile(loss=self.myLosses,
                                  optimizer=self.myOptimizer,
                                  loss_weights=self.myLossWeights, **kwargs)
@@ -88,9 +86,6 @@ class vae(tf.keras.Model):
         Parameters:
             jetList : numpy 2d array
                 Input array of rows of model.encoder_decoder.jetShape jet features
-            target : numpy 2d array
-                Output targets for the particle classification, in one-hot form.
-                Same rows as jetList, model.encoder_decoder.targetShape columns
             validationSplit : float
                 Fraction of inputs to use as validation set. Between 0 and 1
                 Default 0.5
@@ -109,15 +104,14 @@ class vae(tf.keras.Model):
         """
 
         target_kl = np.zeros((jetList.shape[0], 1))
-        return super(vae, self).fit(jetList,
+        return super(vae, self).fit({'jet_input': jetList, 'target_input': target},
                                     {'decoder_output': jetList,
-                                     'kl_divergence': target_kl,
-                                     'classification': target},
+                                     'kl_divergence': target_kl},
                                     batch_size=batchSize,
                                     validation_split=validationSplit,
                                     epochs=epochs, verbose=2, **kwargs)
 
-    def encoder_predict(self, jetList, **kwargs):
+    def encoder_predict(self, jetList, target, **kwargs):
         """
         Generate encoded features and jet type predictions for the input jet features
 
@@ -128,9 +122,10 @@ class vae(tf.keras.Model):
             Numpy array(s) of predictions.
         """
 
-        return self.encoder.predict(jetList, **kwargs)
+        return self.encoder.predict(
+            tf.concat([jetList, target], axis=-1), **kwargs)
 
-    def decoder_predict(self, encodedFeatures, **kwargs):
+    def decoder_predict(self, encodedFeatures, target, **kwargs):
         """
         Generate decoded jet predictions for the input encodings and particle types
 
@@ -142,7 +137,8 @@ class vae(tf.keras.Model):
             Numpy array(s) of predictions.
         """
 
-        return self.decoder.predict(encodedFeatures, **kwargs)
+        return self.decoder.predict(
+            tf.concat([encodedFeatures, target], axis=-1), **kwargs)
 
     def save(self, customName=''):
         """

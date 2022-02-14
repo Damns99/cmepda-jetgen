@@ -22,15 +22,15 @@ with tf.device('/GPU:0'):
     autoencoderModel = vae()
     autoencoderModel.summary()
 
-    lossWeights = [1.0, 0.001, 1.0]
-    learningRate = 0.005
+    lossWeights = [1.0, 0.1]
+    learningRate = 0.01
 
     autoencoderModel.compile(lossWeights=lossWeights,
                              learningRate=learningRate)
 
     validationSplit = 0.5
     batchSize = 400
-    epochs = 100
+    epochs = 30
 
     history = autoencoderModel.fit(jetList, target, validationSplit=validationSplit,
                                    batchSize=batchSize, epochs=epochs)

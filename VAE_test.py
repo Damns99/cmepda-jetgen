@@ -31,9 +31,8 @@ with tf.device('/CPU:0'):
     jetList[:, 2] = jetList[:, 2] / w3
     jetList[:, 1] = np.abs(jetList[:, 1])
 
-    encoded_out = autoencoder_model.encoder_predict(jetList=jetList)
-    encoded_features, pred_target = encoded_out
-    decoded_jets = autoencoder_model.decoder_predict(tf.concat(encoded_out, axis=-1))
+    encoded_features = autoencoder_model.encoder_predict(jetList, target)
+    decoded_jets = autoencoder_model.decoder_predict(encoded_features, target)
 
     print(decoded_jets[:10, :])
     print(jetList[:10, :])
@@ -64,23 +63,14 @@ with tf.device('/CPU:0'):
     # jetScatter3D(encoded_features, predTag)
     # saveFig("birch_clusters_3d")
 
-    print(pred_target[0:20])
-
-    part_pred = np.argmax(pred_target, axis=1)
-    part_real = np.argmax(target, axis=1)
-
-    print(part_pred[0:20])
-    print(part_real[0:20])
-
-    correct = (part_pred == part_real)
-    prediction_accuracy = np.count_nonzero(correct) / njets
-    print(f'pred acc. = {prediction_accuracy * 100 : .2f} %')
-
-    njets_per_type = np.count_nonzero(target, axis=0)
-    pred_acc_per_type = np.array([
-        np.count_nonzero(np.logical_and(correct, part_real == i)) / n
-        for i, n in enumerate(njets_per_type)])
-    for i, pacc in enumerate(pred_acc_per_type):
-        print(f'particle {i} pred acc. = {pacc * 100 : .2f} %')
+    for i in range(5):
+        particleType = np.zeros(5)
+        particleType[i] = 1
+        filterType = np.all((target == particleType), axis=1)
+        encoded_features_filtered = encoded_features[filterType, :]
+        jetTag_filtered = jetTag[filterType]
+        plt.figure()
+        jetScatter3D(encoded_features_filtered, jetTag_filtered)
+        saveFig(f"encoded_features_3d_type{i}")
 
     plt.show()

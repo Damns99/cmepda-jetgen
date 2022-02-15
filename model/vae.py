@@ -66,7 +66,7 @@ class vae(tf.keras.Model):
                 Learning rate to use for the model's optimizer (Adam)
                 Default 0.001
             lossWeights : list or tuple
-                List of 3 weights for each loss to compute the total loss,
+                List of 2 weights for each loss to compute the total loss,
                 in order 'decoder_output', 'kl_divergence', 'classification'
                 Default (1.0, 1.0)
         """

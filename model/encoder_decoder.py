@@ -53,13 +53,14 @@ target_input = Input(shape=targetShape, name='target_input')
 encoder_input = Concatenate()([jet_input, target_input])
 
 hidden = Dense(64, activation="relu")(encoder_input)
+hidden = Dense(64, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(8, activation="relu")(hidden)
 
-mean_layer = Dense(encDimensions, activation="relu", name='mean')(hidden)
+mean_layer = Dense(encDimensions, activation="linear", name='mean')(hidden)
 log_variance_layer = Dense(
-    encDimensions, activation="relu", name='log_variance')(hidden)
+    encDimensions, activation="linear", name='log_variance')(hidden)
 
 latent_encoding = Lambda(sample_latent_features,
                          name='latent_encoding')([mean_layer,
@@ -73,8 +74,8 @@ hidden = Dense(8, activation="relu")(decoder_input)
 hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(64, activation="relu")(hidden)
-hidden = Dense(32, activation="relu")(hidden)
-decoder_output = Dense(5, activation='relu', name='decoder_output')(hidden)
+hidden = Dense(64, activation="relu")(hidden)
+decoder_output = Dense(5, activation='linear', name='decoder_output')(hidden)
 
 
 encoder_model = Model(inputs=encoder_input, outputs=latent_encoding,

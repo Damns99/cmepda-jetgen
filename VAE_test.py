@@ -6,13 +6,10 @@ import tensorflow as tf
 
 # Sfrom sklearn.cluster import Birch
 
-from utilities.file_opener import getJetList
+from utilities.file_opener import getJetList, standData
 from utilities.model_getter import getModels
 from utilities.plots import jetScatter, jetScatter3D
 from utilities.figure_saver import saveFig
-
-w1 = 1000
-w3 = 100
 
 
 with tf.device('/CPU:0'):
@@ -27,9 +24,7 @@ with tf.device('/CPU:0'):
 
     jetTag = np.argmax(target, axis=1)
 
-    jetList[:, 0] = jetList[:, 0] / w1
-    jetList[:, 2] = jetList[:, 2] / w3
-    jetList[:, 1] = np.abs(jetList[:, 1])
+    jetList = standData(jetList)
 
     encoded_features = autoencoder_model.encoder_predict(jetList, target)
     decoded_jets = autoencoder_model.decoder_predict(encoded_features, target)

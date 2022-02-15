@@ -50,3 +50,13 @@ def getJetList(test=False, idx=(1, 2, 3, 10, 11)):
         if test:
             break
     return jetList, target
+
+def standData(jetList):
+    means = np.mean(jetList, axis=0)
+    stds = np.std(jetList, axis=0)
+    print(f'Old: mean = {means} std = {stds}')
+    newJetList = (jetList - means) / stds
+    means = np.mean(newJetList, axis=0)
+    stds = np.std(newJetList, axis=0)
+    print(f'New: mean = {means} std = {stds}')
+    return newJetList

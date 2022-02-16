@@ -5,9 +5,9 @@ import numpy as np
 import tensorflow as tf
 from model.encoder_decoder import (
     encoder_model, encoder_input, decoder_model, decoder_output,
-    kl_divergence, encDimensions, jet_input, target_input)
+    kl_divergence, enc_dimensions, jet_input, target_input)
 
-trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
+train_path = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 
 
 class vae(tf.keras.Model):
@@ -53,11 +53,11 @@ class vae(tf.keras.Model):
                                   name='autoencoder')
         self.encoder = encoder_model
         self.decoder = decoder_model
-        self.encDimensions = encDimensions
-        self.myLosses = {'decoder_output': 'mse',
-                         'kl_divergence': 'mean_absolute_error'}
+        self.enc_dimensions = enc_dimensions
+        self.my_losses = {'decoder_output': 'mse',
+                          'kl_divergence': 'mean_absolute_error'}
 
-    def compile(self, learningRate=0.001, lossWeights=(1.0, 1.0), **kwargs):
+    def compile(self, learning_rate=0.001, loss_weights=(1.0, 1.0), **kwargs):
         """
         Extend tf.keras.Model.compile to work with vae structure and parameters.
 
@@ -71,15 +71,17 @@ class vae(tf.keras.Model):
                 Default (1.0, 1.0)
         """
 
-        self.myOptimizer = tf.keras.optimizers.Adam(learning_rate=learningRate)
-        self.myLossWeights = {
-            'decoder_output': lossWeights[0], 'kl_divergence': lossWeights[1]}
-        super(vae, self).compile(loss=self.myLosses,
-                                 optimizer=self.myOptimizer,
-                                 loss_weights=self.myLossWeights, **kwargs)
+        self.my_optimizer = tf.keras.optimizers.Adam(
+            learning_rate=learning_rate)
+        self.my_loss_weights = {
+            'decoder_output': loss_weights[0],
+            'kl_divergence': loss_weights[1]}
+        super(vae, self).compile(loss=self.my_losses,
+                                 optimizer=self.my_optimizer,
+                                 loss_weights=self.my_loss_weights, **kwargs)
 
-    def fit(self, jetList, target, validationSplit=0.5, batchSize=800, epochs=30,
-            **kwargs):
+    def fit(self, jet_list, target, validation_split=0.5, batch_size=800,
+            epochs=30, **kwargs):
         """
         Extend tf.keras.Model.fit to work with vae structure and parameters.
 
@@ -103,15 +105,16 @@ class vae(tf.keras.Model):
             and validation metrics values (if applicable)
         """
 
-        target_kl = np.zeros((jetList.shape[0], 1))
-        return super(vae, self).fit({'jet_input': jetList, 'target_input': target},
-                                    {'decoder_output': jetList,
+        target_kl = np.zeros((jet_list.shape[0], 1))
+        return super(vae, self).fit({'jet_input': jet_list,
+                                     'target_input': target},
+                                    {'decoder_output': jet_list,
                                      'kl_divergence': target_kl},
-                                    batch_size=batchSize,
-                                    validation_split=validationSplit,
+                                    batch_size=batch_size,
+                                    validation_split=validation_split,
                                     epochs=epochs, verbose=2, **kwargs)
 
-    def encoder_predict(self, jetList, target, **kwargs):
+    def encoder_predict(self, jet_list, target, **kwargs):
         """
         Generate encoded features and jet type predictions for the input jet features
 
@@ -123,9 +126,9 @@ class vae(tf.keras.Model):
         """
 
         return self.encoder.predict(
-            tf.concat([jetList, target], axis=-1), **kwargs)
+            tf.concat([jet_list, target], axis=-1), **kwargs)
 
-    def decoder_predict(self, encodedFeatures, target, **kwargs):
+    def decoder_predict(self, encoded_features, target, **kwargs):
         """
         Generate decoded jet predictions for the input encodings and particle types
 
@@ -138,9 +141,9 @@ class vae(tf.keras.Model):
         """
 
         return self.decoder.predict(
-            tf.concat([encodedFeatures, target], axis=-1), **kwargs)
+            tf.concat([encoded_features, target], axis=-1), **kwargs)
 
-    def save(self, customName=''):
+    def save(self, custom_name=''):
         """
         Save vae, encoder and decoder models as three Tensorflow SavedModel
         in the trainPath folder.
@@ -152,13 +155,13 @@ class vae(tf.keras.Model):
         """
 
         self.encoder.save(os.path.join(
-            trainPath, ''.join(['encoder', customName])))
+            train_path, ''.join(['encoder', custom_name])))
         self.decoder.save(os.path.join(
-            trainPath, ''.join(['decoder', customName])))
+            train_path, ''.join(['decoder', custom_name])))
         return super(vae, self).save(os.path.join(
-            trainPath, ''.join(['vae', customName])))
+            train_path, ''.join(['vae', custom_name])))
 
-    def save_weights(self, customName=''):
+    def save_weights(self, custom_name=''):
         """
         Save vae, encoder and decoder model's weights as three .h5 files
         in the trainPath folder.
@@ -170,13 +173,13 @@ class vae(tf.keras.Model):
         """
 
         self.encoder.save_weights(os.path.join(
-            trainPath, ''.join(['encoder', customName, '.h5'])))
+            train_path, ''.join(['encoder', custom_name, '.h5'])))
         self.decoder.save_weights(os.path.join(
-            trainPath, ''.join(['decoder', customName, '.h5'])))
+            train_path, ''.join(['decoder', custom_name, '.h5'])))
         return super(vae, self).save_weights(os.path.join(
-            trainPath, ''.join(['vae', customName, '.h5'])))
+            train_path, ''.join(['vae', custom_name, '.h5'])))
 
-    def load_from_file(self, customName=''):
+    def load_from_file(self, custom_name=''):
         """
         Load vae, encoder and decoder model's weights from three .h5 files
         in the trainPath folder.
@@ -191,8 +194,8 @@ class vae(tf.keras.Model):
         """
 
         self.encoder.load_weights(os.path.join(
-            trainPath, ''.join(['encoder', customName, '.h5'])))
+            train_path, ''.join(['encoder', custom_name, '.h5'])))
         self.decoder.load_weights(os.path.join(
-            trainPath, ''.join(['decoder', customName, '.h5'])))
+            train_path, ''.join(['decoder', custom_name, '.h5'])))
         return super(vae, self).load_weights(os.path.join(
-            trainPath, ''.join(['vae', customName, '.h5'])))
+            train_path, ''.join(['vae', custom_name, '.h5'])))

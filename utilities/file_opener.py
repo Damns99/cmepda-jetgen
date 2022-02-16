@@ -4,6 +4,8 @@ import os
 import numpy as np
 import h5py
 
+from model.vae import vae
+
 
 data_path = os.path.join(os.path.dirname(__file__), '..', 'data')
 
@@ -13,7 +15,7 @@ filename = ['jetImage_7_100p_0_10000.h5', 'jetImage_7_100p_10000_20000.h5',
             'jetImage_7_100p_70000_80000.h5', 'jetImage_7_100p_80000_90000.h5']
 
 
-def getJetList(test=False, idx=(1, 2, 3, 10, 11)):
+def get_jet_list(test=False, idx=(1, 2, 3, 10, 11)):
     '''
     File opener function for the .h5 dataset.
 
@@ -31,32 +33,55 @@ def getJetList(test=False, idx=(1, 2, 3, 10, 11)):
             Each row is an array corresponding to the one-hot encoded jet type
     '''
 
-    jetList = np.array([])
+    jet_list = np.array([])
     target = np.array([])
 
     for file in filename:
         f = h5py.File(os.path.join(data_path, file))
-        featuresList = np.array(f.get('jets'))
-        myJetList = featuresList[:, idx]
-        myTarget = featuresList[:, -6:-1]
-        if jetList.size:
-            jetList = np.concatenate([jetList, myJetList], axis=0)
-            target = np.concatenate([target, myTarget], axis=0)
+        features_list = np.array(f.get('jets'))
+        my_jet_list = features_list[:, idx]
+        my_target = features_list[:, -6:-1]
+        if jet_list.size:
+            jet_list = np.concatenate([jet_list, my_jet_list], axis=0)
+            target = np.concatenate([target, my_target], axis=0)
         else:
-            jetList = myJetList
-            target = myTarget
-        del myJetList, myTarget
+            jet_list = my_jet_list
+            target = my_target
+        del my_jet_list, my_target
         f.close()
         if test:
             break
-    return jetList, target
+    return jet_list, target
 
-def standData(jetList):
-    means = np.mean(jetList, axis=0)
-    stds = np.std(jetList, axis=0)
-    print(f'Old: mean = {means} std = {stds}')
-    newJetList = (jetList - means) / stds
-    means = np.mean(newJetList, axis=0)
-    stds = np.std(newJetList, axis=0)
-    print(f'New: mean = {means} std = {stds}')
-    return newJetList
+
+def stand_data(jet_list):
+    '''
+    Standardization of dataset. Mean and standard deviation are computed among
+    each feature column.
+
+    Parameters:
+        jetList : numpy 2d array
+            Array to standardize.
+
+    Returns:
+        jetList : numpy 2d array
+            Array of standardized data.
+    '''
+    means = np.mean(jet_list, axis=0)
+    stds = np.std(jet_list, axis=0)
+    return (jet_list - means) / stds
+
+
+def get_models(custom_name=''):
+    """
+    Create a vae model and fill it with previosly saved weights.
+
+    Parameters:
+        customName : string
+            String to append at each model's default file name
+            Default ''
+    """
+
+    autoencoder_model = vae()
+    autoencoder_model.load_from_file(custom_name)
+    return autoencoder_model

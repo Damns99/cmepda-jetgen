@@ -4,9 +4,9 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import (Input, Dense, Lambda, Concatenate)
 
-jetShape = 5
-encDimensions = 3
-targetShape = 5
+jet_shape = 5
+enc_dimensions = 3
+target_shape = 5
 
 
 def sample_latent_features(distribution):
@@ -47,8 +47,8 @@ def kl_divergence_normal(distribution):
     return 1/2 * (tf.exp(log_variance) + tf.square(mean) - 1 - log_variance)
 
 
-jet_input = Input(shape=jetShape, name='jet_input')
-target_input = Input(shape=targetShape, name='target_input')
+jet_input = Input(shape=jet_shape, name='jet_input')
+target_input = Input(shape=target_shape, name='target_input')
 
 encoder_input = Concatenate()([jet_input, target_input])
 
@@ -58,9 +58,9 @@ hidden = Dense(32, activation="relu")(hidden)
 hidden = Dense(16, activation="relu")(hidden)
 hidden = Dense(8, activation="relu")(hidden)
 
-mean_layer = Dense(encDimensions, activation="linear", name='mean')(hidden)
+mean_layer = Dense(enc_dimensions, activation="linear", name='mean')(hidden)
 log_variance_layer = Dense(
-    encDimensions, activation="linear", name='log_variance')(hidden)
+    enc_dimensions, activation="linear", name='log_variance')(hidden)
 
 latent_encoding = Lambda(sample_latent_features,
                          name='latent_encoding')([mean_layer,

@@ -1,12 +1,31 @@
 """Plot utility module to help analisys"""
-
+import os
 from matplotlib import pyplot as plt
 import numpy as np
 
-from utilities.figure_saver import saveFig
+train_path = os.path.join(os.path.dirname(__file__), '..', 'trained_models',
+                          'figures')
 
 
-def historyPlot(history):
+def save_figure(filename, custom_name='', **kwargs):
+    """
+    Save current matplotlib.pyplot figure to a .pdf file in the trainPath
+    folder.
+
+    Parameters:
+        filename : string
+            Name of the file for the figure to save
+        customName : string
+            String to append at each model's file name
+            Default ''
+    """
+
+    plt.savefig(os.path.join(train_path,
+                             ''.join([filename, custom_name, '.pdf'])),
+                **kwargs)
+
+
+def history_plot(history):
     """
     Plot the training history (values of loss and validation loss at each epoch).
 
@@ -23,7 +42,8 @@ def historyPlot(history):
     plt.tick_params(direction='in')
     plt.legend()
 
-def jetScatter(encoded_features, jetTag, idx1=0, idx2=1):
+
+def jet_scatter(encoded_features, jet_tag, idx1=0, idx2=1):
     """
     Plot a 2d scatter plot of the encoded features, coloured by jet type.
 
@@ -42,10 +62,11 @@ def jetScatter(encoded_features, jetTag, idx1=0, idx2=1):
 
     colors = {0: 'red', 1: 'green', 2: 'blue', 3: 'yellow', 4: 'purple'}
     plt.scatter(encoded_features[:, idx1], encoded_features[:, idx2], c=[
-                colors[i] for i in jetTag], alpha=0.5, marker='.')
+                colors[i] for i in jet_tag], alpha=0.5, marker='.')
     plt.axis('equal')
 
-def jetScatter3D(encoded_features, jetTag, idx1=0, idx2=1, idx3=2):
+
+def jet_scatter3D(encoded_features, jet_tag, idx1=0, idx2=1, idx3=2):
     """
     Plot a 3d scatter plot of the encoded features, coloured by jet type.
 
@@ -68,10 +89,11 @@ def jetScatter3D(encoded_features, jetTag, idx1=0, idx2=1, idx3=2):
     colors = {0: 'red', 1: 'green', 2: 'blue', 3: 'yellow', 4: 'purple'}
     plt.axes(projection='3d').scatter3D(
         encoded_features[:, idx1], encoded_features[:, idx2],
-        encoded_features[:, idx3], c=[colors[i] for i in jetTag],
+        encoded_features[:, idx3], c=[colors[i] for i in jet_tag],
         alpha=0.5, marker='.')
 
-def jetHist(jetList, featureNames, customName='', **kwargs):
+
+def jet_hist(jet_list, feature_names, custom_name='', **kwargs):
     """
     Plot a separate histogram for each jet feature and save them in .pdf format
 
@@ -85,8 +107,8 @@ def jetHist(jetList, featureNames, customName='', **kwargs):
             Default ''
     """
 
-    for name, feature in zip(featureNames, np.transpose(jetList)):
+    for name, feature in zip(feature_names, np.transpose(jet_list)):
         plt.figure()
         plt.hist(feature, density=False, **kwargs)
         plt.xlabel(name)
-        saveFig(name, customName)
+        save_figure(name, custom_name)

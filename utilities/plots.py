@@ -15,7 +15,7 @@ def save_figure(filename, custom_name='', **kwargs):
     Parameters:
         filename : string
             Name of the file for the figure to save
-        customName : string
+        custom_name : string
             String to append at each model's file name
             Default ''
     """
@@ -50,7 +50,7 @@ def jet_scatter(encoded_features, jet_tag, idx1=0, idx2=1):
     Parameters:
         encoded_features : numpy 2d array
             features in the encoded space
-        jetTag : numpy 1d array
+        jet_tag : numpy 1d array
             jet type array, possible values are integers in range [0,5)
         idx1 : int
             index of the encoded dimension to plot as x axis
@@ -73,7 +73,7 @@ def jet_scatter3D(encoded_features, jet_tag, idx1=0, idx2=1, idx3=2):
     Parameters:
         encoded_features : numpy 2d array
             features in the encoded space
-        jetTag : numpy 1d array
+        jet_tag : numpy 1d array
             jet type array, possible values are integers in range [0,5)
         idx1 : int
             index of the encoded dimension to plot as x axis
@@ -98,11 +98,11 @@ def jet_hist(jet_list, feature_names, custom_name='', **kwargs):
     Plot a separate histogram for each jet feature and save them in .pdf format
 
     Parameters:
-        jetList: numpy 2d array
+        jet_list: numpy 2d array
             Input array of rows of model.encoder_decoder.jetShape jet features
-        featureNames : list of strings
+        feature_names : list of strings
             Names of the features for the x axis of each histogram
-        customName : string
+        custom_name : string
             String to append to the at featureNames to determine each figure's file name
             Default ''
     """

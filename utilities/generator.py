@@ -3,9 +3,9 @@ def jet_gen(particle_type, n_events=1, seed=42):
     Open a saved vae model and generate new jets of a given jet type from random noise
 
     Parameters:
-        particleType : list or tuple
+        particle_type : list or tuple
             selected jet type in one-hot encoded form.
-        nEvents : int
+        n_events : int
             number of jets to generate.
             Default 1
         seed : int

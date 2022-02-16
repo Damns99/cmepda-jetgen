@@ -27,7 +27,7 @@ def get_jet_list(test=False, idx=(1, 2, 3, 10, 11)):
             Default (1, 2, 3, 10, 11)
 
     Returns:
-        jetList : numpy 2d array
+        jet_list : numpy 2d array
             Each row is an array of the selected jet features
         target : numpy 2d array
             Each row is an array corresponding to the one-hot encoded jet type
@@ -60,12 +60,11 @@ def stand_data(jet_list):
     each feature column.
 
     Parameters:
-        jetList : numpy 2d array
+        jet_list : numpy 2d array
             Array to standardize.
 
     Returns:
-        jetList : numpy 2d array
-            Array of standardized data.
+        Numpy array of standardized data.
     '''
     means = np.mean(jet_list, axis=0)
     stds = np.std(jet_list, axis=0)
@@ -77,7 +76,7 @@ def get_models(custom_name=''):
     Create a vae model and fill it with previosly saved weights.
 
     Parameters:
-        customName : string
+        custom_name : string
             String to append at each model's default file name
             Default ''
     """

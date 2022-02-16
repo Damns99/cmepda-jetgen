@@ -19,26 +19,26 @@ class vae(tf.keras.Model):
             The encoder sub-model as defined and compiled in model.encoder_decoder
         decoder : tf.keras.Model
             The decoder sub-model as defined and compiled in model.encoder_decoder
-        encDimensions : int
+        enc_dimensions : int
             Dimension of the encoding space
-        myLosses : dict
+        my_losses : dict
             Losses to evaluate for the corresponding output layer of the vae
 
     Methods:
-        compile(self, learningRate=0.001, lossWeights=[1.0, 1.0, 1.0], **kwargs):
+        compile(self, learning_rate=0.001, loss_weights=[1.0, 1.0, 1.0], **kwargs):
             Compiles the model
-        fit(self, jetList, target, validationSplit=0.5, batchSize=800, epochs=30,
+        fit(self, jet_list, target, validation_split=0.5, batch_size=800, epochs=30,
             **kwargs):
             Train the model
-        encoder_predict(self, jetList, **kwargs):
+        encoder_predict(self, jet_list, **kwargs):
             Predict encoder output on given input data
-        decoder_predict(self, encodedFeatures, **kwargs):
+        decoder_predict(self, encoded_features, **kwargs):
             Predict decoder output on given input data
-        save(self, customName=''):
+        save(self, custom_name=''):
             Save vae, encoder and decoder models for later use
-        save_weights(self, customName=''):
+        save_weights(self, custom_name=''):
             Save vae, encoder and decoder models' weights in .h5 files
-        load_from_file(self, customName=''):
+        load_from_file(self, custom_name=''):
             Load vae, encoder and decoder models' weights from .h5 files
     """
 
@@ -62,10 +62,10 @@ class vae(tf.keras.Model):
         Extend tf.keras.Model.compile to work with vae structure and parameters.
 
         Parameters:
-            learningRate : float
+            learning_rate : float
                 Learning rate to use for the model's optimizer (Adam)
                 Default 0.001
-            lossWeights : list or tuple
+            loss_weights : list or tuple
                 List of 2 weights for each loss to compute the total loss,
                 in order 'decoder_output', 'kl_divergence', 'classification'
                 Default (1.0, 1.0)
@@ -86,12 +86,12 @@ class vae(tf.keras.Model):
         Extend tf.keras.Model.fit to work with vae structure and parameters.
 
         Parameters:
-            jetList : numpy 2d array
+            jet_list : numpy 2d array
                 Input array of rows of model.encoder_decoder.jetShape jet features
-            validationSplit : float
+            validation_split : float
                 Fraction of inputs to use as validation set. Between 0 and 1
                 Default 0.5
-            batchSize : int
+            batch_size : int
                 Number of samples per gradient update
                 Default 800
             epochs : int
@@ -119,7 +119,7 @@ class vae(tf.keras.Model):
         Generate encoded features and jet type predictions for the input jet features
 
         Parameters:
-            jetList: numpy 2d array
+            jet_list: numpy 2d array
                 Input array of rows of model.encoder_decoder.jetShape jet features
         Returns:
             Numpy array(s) of predictions.
@@ -133,7 +133,7 @@ class vae(tf.keras.Model):
         Generate decoded jet predictions for the input encodings and particle types
 
         Parameters:
-            encodedFeatures: numpy 2d array
+            encoded_features: numpy 2d array
                 Input array of rows of model.encoder_decoder.jetShape encodings
                 each with length self.encDimensions + model.encoder_decoder.targetShape
         Returns:
@@ -149,7 +149,7 @@ class vae(tf.keras.Model):
         in the trainPath folder.
 
         Parameters:
-            customName : string
+            custom_name : string
                 String to append at each model's folder name
                 Default ''
         """
@@ -167,7 +167,7 @@ class vae(tf.keras.Model):
         in the trainPath folder.
 
         Parameters:
-            customName : string
+            custom_name : string
                 String to append at each model's file name
                 Default ''
         """
@@ -185,7 +185,7 @@ class vae(tf.keras.Model):
         in the trainPath folder.
 
         Parameters:
-            customName : string
+            custom_name : string
                 String to append at each model's file name
                 Default ''
 

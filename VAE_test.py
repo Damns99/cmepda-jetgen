@@ -1,56 +1,71 @@
+"""Open the dataset, evaluate the model and confront results with expectations."""
+
 import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
-from sklearn.cluster import Birch
+# Sfrom sklearn.cluster import Birch
 
-from utilities.file_opener import getJetList
+from utilities.file_opener import getJetList, standData
 from utilities.model_getter import getModels
-from utilities.plots import historyPlot, jetScatter, jetHist2D
-from model.vae import vae
+from utilities.plots import jetScatter, jetScatter3D
+from utilities.figure_saver import saveFig
+
 
 with tf.device('/CPU:0'):
     jetList, target = getJetList()
 
-    jet_shape = jetList.shape[1:]
+    # jetList = jetList[:1000, :]
+    # target = target[:1000, :]
+
+    njets = jetList.shape[0]
 
     autoencoder_model = getModels()
 
     jetTag = np.argmax(target, axis=1)
 
-    encoded_features = autoencoder_model.encoder_predict(jetList=jetList)
-    decoded_jets = autoencoder_model.decoder_predict(encoded_features)
+    jetList = standData(jetList)
+
+    encoded_features = autoencoder_model.encoder_predict(jetList, target)
+    decoded_jets = autoencoder_model.decoder_predict(encoded_features, target)
+
+    print(decoded_jets[:10, :])
+    print(jetList[:10, :])
 
     plt.figure()
-    jetScatter(encoded_features, jetTag)
-
-    brc = Birch(branching_factor=50, n_clusters=5, threshold=0.1)
-    brc.fit(encoded_features)
-    predTag = brc.predict(encoded_features)
-
-    plt.figure()
-    jetScatter(encoded_features, predTag)
+    plt.subplot(121)
+    jetScatter(encoded_features, jetTag, 0, 1)
+    plt.subplot(122)
+    jetScatter(encoded_features, jetTag, 0, 2)
+    saveFig("encoded_features_2d")
 
     plt.figure()
-    jetHist2D(jetList[1, :, :])
+    jetScatter3D(encoded_features, jetTag)
+    saveFig("encoded_features_3d")
 
-    plt.figure()
-    jetHist2D(decoded_jets[1, :, :])
+    # brc = Birch(branching_factor=50, n_clusters=5, threshold=0.1)
+    # brc.fit(encoded_features)
+    # predTag = brc.predict(encoded_features)
 
-    # tmpx = np.arange(jet_shape[0]+1)
-    # tmpy = np.arange(jet_shape[1]+1)
-    # tmpx, tmpy = np.meshgrid(tmpx, tmpy)
+    # plt.figure()
+    # plt.subplot(121)
+    # jetScatter(encoded_features, predTag, 0, 1)
+    # plt.subplot(122)
+    # jetScatter(encoded_features, predTag, 0, 2)
+    # saveFig("birch_clusters_2d")
     #
-    # plt.figure(3)
-    # #plt.imshow(jetList[jet_index, :, :], origin='lower', cmap='viridis_r',
-    # #           extent=[0, jet_shape[0], 0, jet_shape[1]])
-    # plt.pcolormesh(tmpx, tmpy, jetList[jet_index, :, :], cmap='viridis_r', shading='flat')
-    # plt.colorbar()
-    #
-    # plt.figure(4)
-    # #plt.imshow(decoded_jets[jet_index, :, :], origin='lower', cmap='viridis_r',
-    # #           extent=[0, jet_shape[0], 0, jet_shape[1]])
-    # plt.pcolormesh(tmpx, tmpy, decoded_jets[jet_index, :, :], cmap='viridis_r', shading='flat')
-    # plt.colorbar()
+    # plt.figure()
+    # jetScatter3D(encoded_features, predTag)
+    # saveFig("birch_clusters_3d")
+
+    for i in range(5):
+        particleType = np.zeros(5)
+        particleType[i] = 1
+        filterType = np.all((target == particleType), axis=1)
+        encoded_features_filtered = encoded_features[filterType, :]
+        jetTag_filtered = jetTag[filterType]
+        plt.figure()
+        jetScatter3D(encoded_features_filtered, jetTag_filtered)
+        saveFig(f"encoded_features_3d_type{i}")
 
     plt.show()

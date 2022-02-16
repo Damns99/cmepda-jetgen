@@ -1,55 +1,43 @@
-import os.path
+"""Open the dataset, load a vae model previously saved and train it more."""
 
-import h5py
 import numpy as np
 from matplotlib import pyplot as plt
-
-from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Lambda, Reshape
-from tensorflow.keras.models import Model
 import tensorflow as tf
 
 from utilities.file_opener import getJetList
+from utilities.model_getter import getModels
+from utilities.plots import historyPlot
+from utilities.figure_saver import saveFig
 
-jetList, _ = getJetList()
+w1 = 1000
+w3 = 100
 
-#pt_norm = 500.
-#jetList[:, :, 0] = jetList[:, :, 0] / pt_norm
+with tf.device('/GPU:0'):
+    jetList, target = getJetList()
 
-#jetList = jetList[:10000, :, :]
+    jetList[:, 0] = jetList[:, 0] / w1
+    jetList[:, 2] = jetList[:, 2] / w3
+    jetList[:, 1] = np.abs(jetList[:, 1])
 
-njets = jetList.shape[0]
-jet_shape = jetList.shape[1:]
+    autoencoderModel = getModels()
 
-encoder_model = tf.keras.models.load_model('Trained_Models/encoder')
-decoder_model = tf.keras.models.load_model('Trained_Models/decoder')
-autoencoder_model = tf.keras.models.load_model('Trained_Models/autoencoder')
+    lossWeights = [1.0, 0.001, 1.0]
+    learningRate = 0.005
 
-# Change learning rate if you want
-new_learning_rate = 0.001
-tf.keras.backend.set_value(autoencoder_model.optimizer.learning_rate,
-                           new_learning_rate)
+    autoencoderModel.compile(lossWeights=lossWeights,
+                             learningRate=learningRate)
 
-target_kl = np.zeros((njets, 1))
+    validationSplit = 0.5
+    batchSize = 400
+    epochs = 100
 
-validation_split = 0.5
-batch_size = 800
-epochs = 5
+    history = autoencoderModel.fit(jetList, target, validationSplit=validationSplit,
+                                   batchSize=batchSize, epochs=epochs)
 
-history = autoencoder_model.fit(
-    jetList, {'decoder_output': jetList, 'kl_divergence': target_kl},
-    validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=2,
-    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=100, verbose=1),
-               tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=25, verbose=1)])
+    plt.figure()
+    historyPlot(history)
+    saveFig('history')
 
-print(history.history.keys())
-plt.plot(history.history["loss"])
-if validation_split > 0.:
-    plt.plot(history.history["val_loss"])
-plt.yscale('log')
-plt.grid()
-
-autoencoder_model.save('Trained_Models/autoencoder')
-encoder_model.save('Trained_Models/encoder')
-decoder_model.save('Trained_Models/decoder')
-
-plt.show()
+    autoencoderModel.save()
+    autoencoderModel.save_weights()
+    plt.show()

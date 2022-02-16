@@ -20,7 +20,7 @@ with tf.device('/GPU:0'):
     autoencoder_model = vae()
     autoencoder_model.summary()
 
-    loss_weights = [1.0, 0.05]
+    loss_weights = [1.0, 0.05, 1.0]
     learning_rate = 0.0001
 
     autoencoder_model.compile(loss_weights=loss_weights,

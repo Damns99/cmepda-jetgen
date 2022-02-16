@@ -50,7 +50,7 @@ def kl_divergence_normal(distribution):
 jet_input = Input(shape=jet_shape, name='jet_input')
 target_input = Input(shape=target_shape, name='target_input')
 
-encoder_input = Concatenate()([jet_input, target_input])
+encoder_input = jet_input
 
 hidden = Dense(64, activation="relu")(encoder_input)
 hidden = Dense(64, activation="relu")(hidden)
@@ -68,7 +68,9 @@ latent_encoding = Lambda(sample_latent_features,
 kl_divergence = Lambda(kl_divergence_normal,
                        name='kl_divergence')([mean_layer, log_variance_layer])
 
-decoder_input = Concatenate()([latent_encoding, target_input])
+classification = Dense(5, activation='sigmoid', name='classification')(hidden)
+
+decoder_input = Concatenate()([latent_encoding, classification])
 
 hidden = Dense(8, activation="relu")(decoder_input)
 hidden = Dense(16, activation="relu")(hidden)

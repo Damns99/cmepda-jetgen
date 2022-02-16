@@ -18,7 +18,7 @@ with tf.device('/GPU:0'):
 
     jet_list = stand_data(jet_list)
 
-    encoded_features = autoencoder_model.encoder_predict(jet_list, target)
+    encoded_features = autoencoder_model.encoder_predict(jet_list)
     decoded_jets = autoencoder_model.decoder_predict(encoded_features, target)
 
     print(decoded_jets[:10, :])

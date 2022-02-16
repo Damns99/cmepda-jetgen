@@ -39,7 +39,6 @@ def history_plot(history):
     plt.yscale('log')
     plt.grid()
     plt.xlabel('Epochs')
-    plt.tick_params(direction='in')
     plt.legend()
 
 

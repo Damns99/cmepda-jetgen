@@ -28,7 +28,7 @@ with tf.device('/GPU:0'):
 
     validation_split = 0.5
     batch_size = 400
-    epochs = 100
+    epochs = 300
 
     history = autoencoder_model.fit(jet_list, target,
                                     validation_split=validation_split,

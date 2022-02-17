@@ -3,13 +3,13 @@
 import os
 import numpy as np
 import tensorflow as tf
-from model.encoder_decoder import (
-    encoder_model, encoder_input, decoder_model, decoder_output,
-    kl_divergence, encDimensions, jet_input, target_input)
+from tensorflow.keras.models import Model
+
+from model.encoder_decoder import enc_dec_layer_builder
 
 trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
 
-
+@tf.keras.utils.register_keras_serializable()
 class vae(tf.keras.Model):
     """
     A class representing a Variation Auto-Encoder, extending tf.keras.Model
@@ -42,20 +42,48 @@ class vae(tf.keras.Model):
             Load vae, encoder and decoder models' weights from .h5 files
     """
 
-    def __init__(self):
+    def __init__(self, jetShape = 5, encDimensions = 3, targetShape = 5,
+                 enc_hidden_nodes=(64,64,32,16,8), dec_hidden_nodes=(8,16,32,64,64),
+                 **kwargs):
         """
         Construct attributes for the vae model from layers and models defined
         in model.encoder_decoder.
         """
 
-        super(vae, self).__init__(inputs=[jet_input, target_input],
-                                  outputs=[decoder_output, kl_divergence],
-                                  name='autoencoder')
-        self.encoder = encoder_model
-        self.decoder = decoder_model
+        self.jetShape = jetShape
         self.encDimensions = encDimensions
+        self.targetShape = targetShape
+        self.enc_hidden_nodes = enc_hidden_nodes
+        self.dec_hidden_nodes = dec_hidden_nodes
+
+        built_enc_dec = enc_dec_layer_builder(self.jetShape, self.encDimensions,
+                                              self.targetShape, self.enc_hidden_nodes,
+                                              self.dec_hidden_nodes)
+        vae_input, vae_output, encoder_input, encoder_output, \
+            decoder_input, decoder_output = built_enc_dec
+
+        super(vae, self).__init__(inputs=vae_input, outputs=vae_output,
+                                  name='autoencoder')
+        self.encoder = Model(inputs=encoder_input, outputs=encoder_output,
+                             name='encoder')
+        self.decoder = Model(inputs=decoder_input, outputs=decoder_output,
+                             name='decoder')
         self.myLosses = {'decoder_output': 'mse',
                          'kl_divergence': 'mean_absolute_error'}
+
+    def get_config(self):
+        config = super(vae, self).get_config()
+        config["layers"].pop(-1)
+        config["layers"].pop(-1)
+        config.update({"jetShape": self.jetShape, "encDimensions": self.encDimensions,
+                       "targetShape": self.targetShape,
+                       "enc_hidden_nodes": self.enc_hidden_nodes,
+                       "dec_hidden_nodes": self.dec_hidden_nodes})
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
 
     def compile(self, learningRate=0.001, lossWeights=(1.0, 1.0), **kwargs):
         """
@@ -76,7 +104,10 @@ class vae(tf.keras.Model):
             'decoder_output': lossWeights[0], 'kl_divergence': lossWeights[1]}
         super(vae, self).compile(loss=self.myLosses,
                                  optimizer=self.myOptimizer,
-                                 loss_weights=self.myLossWeights, **kwargs)
+                                 loss_weights=self.myLossWeights)
+
+        self.encoder.compile(loss='mse', optimizer='adam')
+        self.decoder.compile(loss='mse', optimizer='adam')
 
     def fit(self, jetList, target, validationSplit=0.5, batchSize=800, epochs=30,
             **kwargs):
@@ -176,7 +207,7 @@ class vae(tf.keras.Model):
         return super(vae, self).save_weights(os.path.join(
             trainPath, ''.join(['vae', customName, '.h5'])))
 
-    def load_from_file(self, customName=''):
+    def load_weights(self, customName=''):
         """
         Load vae, encoder and decoder model's weights from three .h5 files
         in the trainPath folder.

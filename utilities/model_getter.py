@@ -2,8 +2,9 @@
 
 import os
 
-from model.vae import vae
+from tensorflow.keras.models import load_model
 
+from model.vae import vae
 
 def getModels(customName=''):
     """
@@ -15,6 +16,6 @@ def getModels(customName=''):
             Default ''
     """
 
-    autoencoder_model = vae()
-    autoencoder_model.load_from_file(customName)
-    return autoencoder_model
+    trainPath = os.path.join(os.path.dirname(__file__), '..', 'trained_models')
+    print(f'searching in {trainPath}')
+    return load_model(os.path.join(trainPath, 'vae'))

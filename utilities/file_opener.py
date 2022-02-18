@@ -4,9 +4,6 @@ import os
 import numpy as np
 import h5py
 
-from model.vae import vae
-
-
 data_path = os.path.join(os.path.dirname(__file__), '..', 'data')
 
 filename = ['jetImage_7_100p_0_10000.h5', 'jetImage_7_100p_10000_20000.h5',
@@ -76,11 +73,13 @@ def get_models(custom_name=''):
     Create a vae model and fill it with previosly saved weights.
 
     Parameters:
-        custom_name : string
+        customName : string
             String to append at each model's default file name
             Default ''
     """
+    from tensorflow.keras.models import load_model
 
-    autoencoder_model = vae()
-    autoencoder_model.load_from_file(custom_name)
-    return autoencoder_model
+    train_path = os.path.join(os.path.dirname(
+        __file__), '..', 'trained_models')
+    print(f'searching in {train_path}')
+    return load_model(os.path.join(train_path, 'vae'))

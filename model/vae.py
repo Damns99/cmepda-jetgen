@@ -17,11 +17,19 @@ class vae(tf.keras.Model):
 
     Attributes:
         encoder : tf.keras.Model
-            The encoder sub-model as defined and compiled in model.encoder_decoder
+            The encoder sub-model
         decoder : tf.keras.Model
-            The decoder sub-model as defined and compiled in model.encoder_decoder
+            The decoder sub-model
+        jet_shape : int
+            Number of jet features in input
         enc_dimensions : int
             Dimension of the encoding space
+        target_shape : int
+            number of jet types
+        enc_hidden_nodes : list or tuple
+            list of hidden dense layers' shapes for the encoder
+        dec_hidden_nodes : list or tuple
+            list of hidden dense layers' shapes for the decoder
         my_losses : dict
             Losses to evaluate for the corresponding output layer of the vae
 
@@ -31,24 +39,44 @@ class vae(tf.keras.Model):
         fit(self, jet_list, target, validation_split=0.5, batch_size=800, epochs=30,
             **kwargs):
             Train the model
-        encoder_predict(self, jet_list, **kwargs):
+        encoder_predict(self, jet_list, target, **kwargs):
             Predict encoder output on given input data
-        decoder_predict(self, encoded_features, **kwargs):
+        decoder_predict(self, encoded_features, target, **kwargs):
             Predict decoder output on given input data
         save(self, custom_name=''):
             Save vae, encoder and decoder models for later use
         save_weights(self, custom_name=''):
             Save vae, encoder and decoder models' weights in .h5 files
-        load_from_file(self, custom_name=''):
+        load_weights(self, custom_name=''):
             Load vae, encoder and decoder models' weights from .h5 files
+        get_config(self):
+            Get vae's config information to manage saving and loading with keras
+        from_config(cls, config):
+            Alternative constructor using the config information from get_config
     """
 
     def __init__(self, jet_shape=5, enc_dimensions=3, target_shape=5,
                  enc_hidden_nodes=(64, 64, 32, 16, 8),
                  dec_hidden_nodes=(8, 16, 32, 64, 64), **kwargs):
         """
-        Construct attributes for the vae model from layers and models defined
-        in model.encoder_decoder.
+        Construct the vae model from layers defined in model.encoder_decoder.
+
+        Parameters:
+            jet_shape : int
+                Number of jet features in input
+                Default: 5
+            enc_dimensions : int
+                Dimension of the encoding space
+                Default: 3
+            target_shape : int
+                number of jet types
+                Default: 5
+            enc_hidden_nodes : list or tuple
+                list of hidden dense layers' shapes for the encoder
+                Default: (64, 64, 32, 16, 8)
+            dec_hidden_nodes : list or tuple
+                list of hidden dense layers' shapes for the decoder
+                Default: (8, 16, 32, 64, 64)
         """
 
         self.jet_shape = jet_shape
@@ -75,6 +103,16 @@ class vae(tf.keras.Model):
                           'kl_divergence': 'mean_absolute_error'}
 
     def get_config(self):
+        """
+        Get vae's config information to manage saving and loading with keras.
+        Update the default Model class dictionary: delete encoder and decoder's
+        redundant information; add the parameters for the default constructor.
+
+        Returns:
+            config : dict
+                the config dictionary to map vae to save file and viceversa
+        """
+
         config = super(vae, self).get_config()
         config["layers"].pop(-1)
         config["layers"].pop(-1)
@@ -87,6 +125,11 @@ class vae(tf.keras.Model):
 
     @classmethod
     def from_config(cls, config):
+        """
+        Alternative constructor using the config information from get_config.
+        Calls the default constructor. Added for eventual customization.
+        """
+
         return cls(**config)
 
     def compile(self, learning_rate=0.001, loss_weights_list=(1.0, 1.0), **kwargs):
@@ -99,13 +142,12 @@ class vae(tf.keras.Model):
                 Default 0.001
             loss_weights : list or tuple
                 List of 2 weights for each loss to compute the total loss,
-                in order 'decoder_output', 'kl_divergence', 'classification'
+                in order 'decoder_output', 'kl_divergence'
                 Default (1.0, 1.0)
         """
 
         self.my_optimizer = tf.keras.optimizers.Adam(
                                     learning_rate=learning_rate)
-        print(loss_weights_list)
         self.my_loss_weights = {'decoder_output': loss_weights_list[0],
                                 'kl_divergence': loss_weights_list[1]}
         super(vae, self).compile(loss=self.my_losses,
@@ -122,7 +164,9 @@ class vae(tf.keras.Model):
 
         Parameters:
             jet_list : numpy 2d array
-                Input array of rows of model.encoder_decoder.jetShape jet features
+                Input array of rows of self.jet_shape jet features
+            target: numpy 2d array
+                Input array of rows of self.target_shape one-hot jet type
             validation_split : float
                 Fraction of inputs to use as validation set. Between 0 and 1
                 Default 0.5
@@ -154,8 +198,11 @@ class vae(tf.keras.Model):
         Generate encoded features and jet type predictions for the input jet features
 
         Parameters:
-            jet_list: numpy 2d array
-                Input array of rows of model.encoder_decoder.jetShape jet features
+            jet_list : numpy 2d array
+                Input array of rows of self.jet_shape jet features
+            target: numpy 2d array
+                Input array of rows of self.target_shape one-hot jet type
+
         Returns:
             Numpy array(s) of predictions.
         """
@@ -169,8 +216,11 @@ class vae(tf.keras.Model):
 
         Parameters:
             encoded_features: numpy 2d array
-                Input array of rows of model.encoder_decoder.jetShape encodings
-                each with length self.encDimensions + model.encoder_decoder.targetShape
+                Input array of rows of self.jetShape encodings
+                each with length self.encDimensions
+            target: numpy 2d array
+                Input array of rows of self.target_shape one-hot jet type
+
         Returns:
             Numpy array(s) of predictions.
         """

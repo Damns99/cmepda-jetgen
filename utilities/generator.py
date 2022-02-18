@@ -1,3 +1,8 @@
+"""Jet generator module"""
+
+import numpy as np
+from utilities.file_opener import get_models
+
 def jet_gen(particle_type, n_events=1, seed=42):
     """
     Open a saved vae model and generate new jets of a given jet type from random noise
@@ -15,8 +20,6 @@ def jet_gen(particle_type, n_events=1, seed=42):
     Returns:
         A numpy 2d array of nEvents rows each with generated jet features
     """
-    import numpy as np
-    from utilities.file_opener import get_models
 
     autoencoder_model = get_models()
 

@@ -47,6 +47,32 @@ def kl_divergence_normal(distribution):
 def enc_dec_layer_builder(jet_shape=5, enc_dimensions=3, target_shape=5,
                           enc_hidden_nodes=(64, 64, 32, 16, 8),
                           dec_hidden_nodes=(8, 16, 32, 64, 64)):
+    """
+    Construct the autoencoder layers and connections.
+
+        Parameters:
+            jet_shape : int
+                Number of jet features in input
+                Default: 5
+            enc_dimensions : int
+                Dimension of the encoding space
+                Default: 3
+            target_shape : int
+                number of jet types
+                Default: 5
+            enc_hidden_nodes : list or tuple
+                list of hidden dense layers' shapes for the encoder
+                Default: (64, 64, 32, 16, 8)
+            dec_hidden_nodes : list or tuple
+                list of hidden dense layers' shapes for the decoder
+                Default: (8, 16, 32, 64, 64)
+
+        Returns:
+            [vae_input, vae_output, encoder_input, encoder_output,
+             decoder_input, decoder_output]
+                a list containing input and output layers for the vae,
+                encoder and decoder models
+    """
 
     jet_input = Input(shape=jet_shape, name='jet_input')
     target_input = Input(shape=target_shape, name='target_input')

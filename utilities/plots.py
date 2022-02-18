@@ -1,4 +1,5 @@
 """Plot utility module to help analisys"""
+
 import os
 from matplotlib import pyplot as plt
 import numpy as np

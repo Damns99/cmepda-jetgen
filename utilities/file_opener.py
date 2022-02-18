@@ -1,4 +1,4 @@
-'''File opener for the .h5 dataset'''
+"""File opener for the .h5 dataset and previously saved models"""
 
 import os
 import numpy as np
@@ -17,7 +17,7 @@ filename = ['jetImage_7_100p_0_10000.h5', 'jetImage_7_100p_10000_20000.h5',
 
 
 def get_jet_list(test=False, idx=(1, 2, 3, 10, 11)):
-    '''
+    """
     File opener function for the .h5 dataset.
 
     Parameters:
@@ -32,7 +32,7 @@ def get_jet_list(test=False, idx=(1, 2, 3, 10, 11)):
             Each row is an array of the selected jet features
         target : numpy 2d array
             Each row is an array corresponding to the one-hot encoded jet type
-    '''
+    """
 
     jet_list = np.array([])
     target = np.array([])
@@ -56,7 +56,7 @@ def get_jet_list(test=False, idx=(1, 2, 3, 10, 11)):
 
 
 def stand_data(jet_list):
-    '''
+    """
     Standardization of dataset. Mean and standard deviation are computed among
     each feature column.
 
@@ -66,7 +66,7 @@ def stand_data(jet_list):
 
     Returns:
         Numpy array of standardized data.
-    '''
+    """
     means = np.mean(jet_list, axis=0)
     stds = np.std(jet_list, axis=0)
     return (jet_list - means) / stds
@@ -80,9 +80,11 @@ def get_models(custom_name=''):
         customName : string
             String to append at each model's default file name
             Default ''
+
+    Returns:
+        a vae instance as defined in model.vae
     """
 
     train_path = os.path.join(os.path.dirname(
         __file__), '..', 'trained_models')
-    print(f'searching in {train_path}')
     return load_model(os.path.join(train_path, ''.join(['vae', custom_name])))

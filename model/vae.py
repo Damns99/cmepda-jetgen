@@ -71,8 +71,8 @@ class vae(tf.keras.Model):
                              name='encoder')
         self.decoder = Model(inputs=decoder_input, outputs=decoder_output,
                              name='decoder')
-        self.myLosses = {'decoder_output': 'mse',
-                         'kl_divergence': 'mean_absolute_error'}
+        self.my_losses = {'decoder_output': 'mse',
+                          'kl_divergence': 'mean_absolute_error'}
 
     def get_config(self):
         config = super(vae, self).get_config()
@@ -89,7 +89,7 @@ class vae(tf.keras.Model):
     def from_config(cls, config):
         return cls(**config)
 
-    def compile(self, learning_rate=0.001, loss_weights=(1.0, 1.0), **kwargs):
+    def compile(self, learning_rate=0.001, loss_weights_list=(1.0, 1.0), **kwargs):
         """
         Extend tf.keras.Model.compile to work with vae structure and parameters.
 
@@ -105,12 +105,12 @@ class vae(tf.keras.Model):
 
         self.my_optimizer = tf.keras.optimizers.Adam(
                                     learning_rate=learning_rate)
-        self.my_loss_weights = {
-            'decoder_output': loss_weights[0],
-            'kl_divergence': loss_weights[1]}
+        print(loss_weights_list)
+        self.my_loss_weights = {'decoder_output': loss_weights_list[0],
+                                'kl_divergence': loss_weights_list[1]}
         super(vae, self).compile(loss=self.my_losses,
                                  optimizer=self.my_optimizer,
-                                 loss_weights=self.my_loss_weights, **kwargs)
+                                 loss_weights=self.my_loss_weights)
 
         self.encoder.compile(loss='mse', optimizer='adam')
         self.decoder.compile(loss='mse', optimizer='adam')

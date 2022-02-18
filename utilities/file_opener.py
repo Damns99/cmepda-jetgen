@@ -4,6 +4,10 @@ import os
 import numpy as np
 import h5py
 
+from model.vae import vae
+from tensorflow.keras.models import load_model
+
+
 data_path = os.path.join(os.path.dirname(__file__), '..', 'data')
 
 filename = ['jetImage_7_100p_0_10000.h5', 'jetImage_7_100p_10000_20000.h5',
@@ -77,9 +81,8 @@ def get_models(custom_name=''):
             String to append at each model's default file name
             Default ''
     """
-    from tensorflow.keras.models import load_model
 
     train_path = os.path.join(os.path.dirname(
         __file__), '..', 'trained_models')
     print(f'searching in {train_path}')
-    return load_model(os.path.join(train_path, 'vae'))
+    return load_model(os.path.join(train_path, ''.join(['vae', custom_name])))

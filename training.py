@@ -20,10 +20,10 @@ with tf.device('/GPU:0'):
     autoencoder_model = vae()
     autoencoder_model.summary()
 
-    loss_weights = [1.0, 0.05]
+    loss_weights_list = [1.0, 0.05]
     learning_rate = 0.0001
 
-    autoencoder_model.compile(loss_weights=loss_weights,
+    autoencoder_model.compile(loss_weights_list=loss_weights_list,
                               learning_rate=learning_rate)
 
     validation_split = 0.5
